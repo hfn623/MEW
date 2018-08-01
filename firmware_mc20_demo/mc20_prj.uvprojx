@@ -401,16 +401,6 @@
               <FilePath>.\Codes\MEW\mew_buff.h</FilePath>
             </File>
             <File>
-              <FileName>mew_mc20.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Codes\MEW\mew_mc20.c</FilePath>
-            </File>
-            <File>
-              <FileName>mew_mc20.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Codes\MEW\mew_mc20.h</FilePath>
-            </File>
-            <File>
               <FileName>mew_stm32.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Codes\MEW\mew_stm32.c</FilePath>
@@ -419,6 +409,16 @@
               <FileName>mew_stm32.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Codes\MEW\mew_stm32.h</FilePath>
+            </File>
+            <File>
+              <FileName>mew_m26.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Codes\MEW\mew_m26.c</FilePath>
+            </File>
+            <File>
+              <FileName>mew_m26.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Codes\MEW\mew_m26.h</FilePath>
             </File>
           </Files>
         </Group>

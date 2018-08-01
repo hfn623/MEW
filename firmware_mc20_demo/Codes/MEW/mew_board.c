@@ -1,6 +1,6 @@
 #include "mew_board.h"
 #include "mew_stm32.h"
-#include "mew_mc20.h"
+#include "mew_m26.h"
 #include "stm32f10x.h"
 #include "stdio.h"
 
@@ -125,7 +125,7 @@ void mew_board_Init(void)
 	
 	mew_board.MC20_PK(1);
 		
-	mew_mc20_Init(
+	mew_m26_Init(
 	gprs_tx_buff, &gprs_tx_bufflen,
 	gprs_rx_buff, &gprs_rx_bufflen,
 	&mew_stm32.Nowticks);
@@ -133,11 +133,11 @@ void mew_board_Init(void)
 ////////////////////////////////////////////////////////////////
 //板级抽象钩子函数
 ////////////////////////////////////////////////////////////////
-void mew_mc20_DelayMS_Hook(uint32_t timespan)
+void mew_m26_DelayMS_Hook(uint32_t timespan)
 {
 	mew_stm32.DelayMS(timespan);
 }
-void mew_mc20_SendBuff_Hook(uint8_t *buff, uint16_t len)
+void mew_m26_SendBuff_Hook(uint8_t *buff, uint16_t len)
 {
 	uint16_t i;
 	for(i= 0; i< len; i++)
@@ -147,7 +147,7 @@ void mew_mc20_SendBuff_Hook(uint8_t *buff, uint16_t len)
 }
 void mew_stm32_UARTRecvDone_Hook(uint8_t port)
 {
-	uint16_t i;
+//	uint16_t i;
 	if(port == 2)
 	{
 		//缓存内容全部发给用户
@@ -183,7 +183,7 @@ void mew_stm32_UARTRecvByte_Hook(uint8_t port, uint8_t byte)
 		{
 			gprs_rx_buff[gprs_rx_bufflen ++]= byte;
 		}
-		if(debug && mew_mc20.IsReceiving() == 0)
+		if(debug && mew_m26.IsReceiving() == 0)
 		{
 			mew_stm32.UARTSendByte(1, byte);
 		}
@@ -192,34 +192,34 @@ void mew_stm32_UARTRecvByte_Hook(uint8_t port, uint8_t byte)
 ////////////////////////////////////////////////////////////////
 //用户级抽象钩子函数
 ////////////////////////////////////////////////////////////////
-void mew_mc20_Reset_Hook(void)
+void mew_m26_Reset_Hook(void)
 {
 	mew_board.LED_TX(1);
 	mew_board.LED_RX(1);
 	mew_board.LED_STA(1);
 }
 
-void mew_mc20_GPRSConnDone_Hook(void)
+void mew_m26_GPRSConnDone_Hook(void)
 {
 	mew_board.LED_STA(0);
 }
 
-void mew_mc20_SocketConnDone_Hook(uint8_t ch)
+void mew_m26_SocketConnDone_Hook(uint8_t ch)
 {
 	if(ch == 0)
 	{
 		mew_board.LED_TX(0);
 		mew_board.LED_RX(0);
-		mew_mc20.SocketSend(ch, (uint8_t *)"mc20_conn_done\n", 15);
+		mew_m26.SocketSend(ch, (uint8_t *)"mc20_conn_done\n", 15);
 	}
 }
 
-void mew_mc20_SocketHeartbeat_Hook(uint8_t ch)
+void mew_m26_SocketHeartbeat_Hook(uint8_t ch)
 {
-	mew_mc20.SocketSend(ch, (uint8_t *)"mc20_hb\n", 8);
+	mew_m26.SocketSend(ch, (uint8_t *)"mc20_hb\n", 8);
 }
 
-void mew_mc20_SocketDisconn_Hook(uint8_t ch, int8_t reason)
+void mew_m26_SocketDisconn_Hook(uint8_t ch, int8_t reason)
 {
 	if(ch == 0)
 	{
