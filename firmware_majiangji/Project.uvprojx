@@ -336,7 +336,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Sources\STLib;.\Sources\BSP;.\Sources\App;.\Sources\mwLib;.\Sources\cJSON</IncludePath>
+              <IncludePath>.\Sources\Core;.\Sources\STLib;.\Sources\cJSON;.\Sources\MEW;.\Sources\User</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -377,6 +377,56 @@
         </TargetArmAds>
       </TargetOption>
       <Groups>
+        <Group>
+          <GroupName>Core</GroupName>
+          <Files>
+            <File>
+              <FileName>core_cm3.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\Core\core_cm3.c</FilePath>
+            </File>
+            <File>
+              <FileName>core_cm3.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\Core\core_cm3.h</FilePath>
+            </File>
+            <File>
+              <FileName>startup_stm32f10x_md.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\Sources\Core\startup_stm32f10x_md.s</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\Core\stm32f10x.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_conf.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\Core\stm32f10x_conf.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_it.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\Core\stm32f10x_it.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_it.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\Core\stm32f10x_it.h</FilePath>
+            </File>
+            <File>
+              <FileName>system_stm32f10x.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\Core\system_stm32f10x.c</FilePath>
+            </File>
+            <File>
+              <FileName>system_stm32f10x.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\Core\system_stm32f10x.h</FilePath>
+            </File>
+          </Files>
+        </Group>
         <Group>
           <GroupName>STLib</GroupName>
           <Files>
@@ -613,101 +663,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>BSP</GroupName>
-          <Files>
-            <File>
-              <FileName>core_cm3.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\BSP\core_cm3.c</FilePath>
-            </File>
-            <File>
-              <FileName>core_cm3.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\BSP\core_cm3.h</FilePath>
-            </File>
-            <File>
-              <FileName>startup_stm32f10x_md.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\Sources\BSP\startup_stm32f10x_md.s</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f10x.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\BSP\stm32f10x.h</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f10x_conf.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\BSP\stm32f10x_conf.h</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f10x_it.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\BSP\stm32f10x_it.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f10x_it.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\BSP\stm32f10x_it.h</FilePath>
-            </File>
-            <File>
-              <FileName>system_stm32f10x.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\BSP\system_stm32f10x.c</FilePath>
-            </File>
-            <File>
-              <FileName>system_stm32f10x.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\BSP\system_stm32f10x.h</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>App</GroupName>
-          <Files>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\App\main.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>mwLib</GroupName>
-          <Files>
-            <File>
-              <FileName>mwSTM32.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\mwLib\mwSTM32.h</FilePath>
-            </File>
-            <File>
-              <FileName>mwSTM32.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\mwLib\mwSTM32.c</FilePath>
-            </File>
-            <File>
-              <FileName>mwM26.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\mwLib\mwM26.h</FilePath>
-            </File>
-            <File>
-              <FileName>mwM26.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Sources\mwLib\mwM26.c</FilePath>
-            </File>
-            <File>
-              <FileName>mwBuff.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Sources\mwLib\mwBuff.h</FilePath>
-            </File>
-            <File>
-              <FileName>mwBuff.lib</FileName>
-              <FileType>4</FileType>
-              <FilePath>.\Sources\mwLib\mwBuff.lib</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>cJSON</GroupName>
           <Files>
             <File>
@@ -729,6 +684,61 @@
               <FileName>cJSON_Utils.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Sources\cJSON\cJSON_Utils.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>MEW</GroupName>
+          <Files>
+            <File>
+              <FileName>mew_buff.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\MEW\mew_buff.c</FilePath>
+            </File>
+            <File>
+              <FileName>mew_buff.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\MEW\mew_buff.h</FilePath>
+            </File>
+            <File>
+              <FileName>mew_m26.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\MEW\mew_m26.c</FilePath>
+            </File>
+            <File>
+              <FileName>mew_m26.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\MEW\mew_m26.h</FilePath>
+            </File>
+            <File>
+              <FileName>mew_stm32.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\MEW\mew_stm32.c</FilePath>
+            </File>
+            <File>
+              <FileName>mew_stm32.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\MEW\mew_stm32.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>User</GroupName>
+          <Files>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\User\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>mew_board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sources\User\mew_board.c</FilePath>
+            </File>
+            <File>
+              <FileName>mew_board.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Sources\User\mew_board.h</FilePath>
             </File>
           </Files>
         </Group>
