@@ -884,6 +884,27 @@ static uint8_t is_recv(void)
 //static int8_t GPSParse(char *info)
 //{
 //}
+static int8_t is_vaild_ip(char *str)
+{
+	uint8_t c = 0;
+	while(*str != 0)
+	{
+		if(!((*str >= '0' && *str <= '9') || *str == '.'))
+		{
+			return -1;
+		}
+		c++;
+		str++;
+	}
+	if(c >= 7)
+	{
+		return 0;
+	}
+	else
+	{
+		return -2;
+	}
+}
 static void socket_Schedule_NoOS(void)
 {
 	uint8_t i;
@@ -916,11 +937,14 @@ static void socket_Schedule_NoOS(void)
 		}
 	}
 	if(mew_m26.WorkState == M26_WS_TCP_CONNECTING)
-	{		
-		if(0 < AT_QIDNSGIP(mew_m26.ADDR[socketConnectingChannel], mew_m26.IP[socketConnectingChannel], DNSGIP_TIMEOUT_SEC))
+	{
+		if(0 > is_vaild_ip(mew_m26.IP[socketConnectingChannel]))
 		{
-			mew_m26_SocketConnErr_Hook(socketConnectingChannel, -2);
-			//return 0;
+			if(0 < AT_QIDNSGIP(mew_m26.ADDR[socketConnectingChannel], mew_m26.IP[socketConnectingChannel], DNSGIP_TIMEOUT_SEC))
+			{
+				mew_m26_SocketConnErr_Hook(socketConnectingChannel, -2);
+				//return 0;
+			}
 		}
 		if(0 <= AT_CLOSE(socketConnectingChannel, AT_CMD_TIMEOUT_MSEC))
 		{
