@@ -1,7 +1,11 @@
 #ifndef mew_BOARD_H
 #define mew_BOARD_H
 
-#include "stdint.h"
+#include <stdint.h>
+
+#define GPRS_TX_BUFF_COUNT 2048
+#define GPRS_RX_BUFF_COUNT 2048
+#define GNSS_RX_BUFF_COUNT 2048
 
 typedef struct mew_board_Handle_t
 {

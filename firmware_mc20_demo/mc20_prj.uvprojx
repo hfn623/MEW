@@ -420,6 +420,16 @@
               <FileType>5</FileType>
               <FilePath>.\Codes\MEW\mew_m26.h</FilePath>
             </File>
+            <File>
+              <FileName>mew_nmea.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Codes\MEW\mew_nmea.c</FilePath>
+            </File>
+            <File>
+              <FileName>mew_nmea.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Codes\MEW\mew_nmea.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

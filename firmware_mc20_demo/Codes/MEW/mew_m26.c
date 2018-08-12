@@ -96,7 +96,7 @@ void mew_m26_Init(uint8_t *txbuff, uint16_t *txbufflen, uint8_t *rxbuff, uint16_
 	socketStateBits = 0;
 	socketEnableBits = 0;
 	
-	mew_m26.WorkState = MC20_WS_RESETING;		
+	mew_m26.WorkState = M26_WS_RESETING;		
 	mew_m26.Socket_Schedule_NoOS = socket_Schedule_NoOS;
 //	mew_m26.HTTP_Schedule_NoOS = HTTP_Schedule_NoOS;
 	mew_m26.SocketSend = socketPush;	
@@ -734,24 +734,24 @@ static int16_t AT_QIRD(uint8_t ch, char *pIP, uint16_t pPORT, uint16_t readMax, 
 	return -1;
 }
 
-static int8_t GPSEnable(void)
-{
-	int8_t err_res;
-	err_res = AT_X("AT+QGNSSC=1\r", "AT+QGNSSC=1\r\r\nOK\r\n", AT_CMD_TIMEOUT_MSEC, 3);
-//	if(err_res)
-	{
-		return err_res;
-	}
-}
-static int8_t GPSDisable(void)
-{
-	int8_t err_res;
-	err_res = AT_X("AT+QGNSSC=0\r", "AT+QGNSSC=1\r\r\nOK\r\n", AT_CMD_TIMEOUT_MSEC, 3);
-//	if(err_res)
-	{
-		return err_res;
-	}
-}
+//static int8_t GPSEnable(void)
+//{
+//	int8_t err_res;
+//	err_res = AT_X("AT+QGNSSC=1\r", "AT+QGNSSC=1\r\r\nOK\r\n", AT_CMD_TIMEOUT_MSEC, 3);
+////	if(err_res)
+//	{
+//		return err_res;
+//	}
+//}
+//static int8_t GPSDisable(void)
+//{
+//	int8_t err_res;
+//	err_res = AT_X("AT+QGNSSC=0\r", "AT+QGNSSC=1\r\r\nOK\r\n", AT_CMD_TIMEOUT_MSEC, 3);
+////	if(err_res)
+//	{
+//		return err_res;
+//	}
+//}
 static int8_t reset(void)
 {
 	int8_t err_res;
@@ -878,20 +878,20 @@ static uint8_t is_recv(void)
 {
 	return isRecv;
 }
-static int8_t GPSParse(char *info)
-{
-}
+//static int8_t GPSParse(char *info)
+//{
+//}
 static void socket_Schedule_NoOS(void)
 {
 	uint8_t i;
 	int8_t res;
 	
-	if(mew_m26.WorkState == MC20_WS_RESETING)
+	if(mew_m26.WorkState == M26_WS_RESETING)
 	{		
 		mew_m26_ResetStart_Hook();
 		if(0 <= reset())
 		{
-			mew_m26.WorkState = MC20_WS_RESET;
+			mew_m26.WorkState = M26_WS_RESET;
 			mew_m26_Reset_Hook();
 //			if(mew_m26.EnableLoc)
 			{
@@ -899,20 +899,20 @@ static void socket_Schedule_NoOS(void)
 			}
 		}
 	}		
-	if(mew_m26.WorkState == MC20_WS_GPRS_CONNECTING)
+	if(mew_m26.WorkState == M26_WS_GPRS_CONNECTING)
 	{
 		if(0 <= GPRSConn())
 		{			
 			mew_m26_GPRSConnDone_Hook();
-			mew_m26.WorkState = MC20_WS_GPRS_CONNECTED;
+			mew_m26.WorkState = M26_WS_GPRS_CONNECTED;
 		}
 		else
 		{
 			mew_m26_GPRSConnErr_Hook();
-			mew_m26.WorkState = MC20_WS_RESETING;
+			mew_m26.WorkState = M26_WS_RESETING;
 		}
 	}
-	if(mew_m26.WorkState == MC20_WS_TCP_CONNECTING)
+	if(mew_m26.WorkState == M26_WS_TCP_CONNECTING)
 	{		
 		if(0 < AT_QIDNSGIP(mew_m26.ADDR[socketConnectingChannel], mew_m26.IP[socketConnectingChannel], DNSGIP_TIMEOUT_SEC))
 		{
@@ -940,22 +940,22 @@ static void socket_Schedule_NoOS(void)
 		{
 			mew_m26_SocketConnErr_Hook(socketConnectingChannel, -1);
 		}
-		mew_m26.WorkState = MC20_WS_IDLE;
+		mew_m26.WorkState = M26_WS_IDLE;
 	}
 	
-	if(mew_m26.WorkState == MC20_WS_RESET)
+	if(mew_m26.WorkState == M26_WS_RESET)
 	{
-		mew_m26.WorkState = MC20_WS_GPRS_CONNECTING;
+		mew_m26.WorkState = M26_WS_GPRS_CONNECTING;
 	}	
-	if(mew_m26.WorkState == MC20_WS_GPRS_CONNECTED)
+	if(mew_m26.WorkState == M26_WS_GPRS_CONNECTED)
 	{		
-		mew_m26.WorkState = MC20_WS_IDLE;
+		mew_m26.WorkState = M26_WS_IDLE;
 	}
-	if(mew_m26.WorkState == MC20_WS_TCP_CONNECTED)
+	if(mew_m26.WorkState == M26_WS_TCP_CONNECTED)
 	{
-		mew_m26.WorkState = MC20_WS_IDLE;
+		mew_m26.WorkState = M26_WS_IDLE;
 	}
-	if(mew_m26.WorkState == MC20_WS_IDLE)
+	if(mew_m26.WorkState == M26_WS_IDLE)
 	{
 		for(i = 0; i < CHANNEL_COUNT; i ++)
 		{
@@ -1013,7 +1013,7 @@ static void socket_Schedule_NoOS(void)
 						{
 							//socketStateClr(i);
 							socketConnectingChannel = i;
-							mew_m26.WorkState = MC20_WS_TCP_CONNECTING;
+							mew_m26.WorkState = M26_WS_TCP_CONNECTING;
 							
 							break;
 						}

@@ -2,23 +2,28 @@
 #include "mew_stm32.h"
 #include "mew_m26.h"
 #include "stm32f10x.h"
-#include "stdio.h"
 
-#define GPRS_TX_BUFF_COUNT 2048
-#define GPRS_RX_BUFF_COUNT 2048
-#define GNSS_RX_BUFF_COUNT 2048
+#include "mew_nmea.h"
 
-uint8_t debug = 1;
+#include <stdio.h>
+#include <string.h>
+
+uint8_t debug = 0;
 
 mew_board_Handle_t mew_board;
 
 static uint8_t gprs_tx_buff[GPRS_TX_BUFF_COUNT];
-static uint8_t gprs_rx_buff[GPRS_RX_BUFF_COUNT];
-static uint8_t gnss_rx_buff[GNSS_RX_BUFF_COUNT];
-
 static uint16_t gprs_tx_bufflen;
+
+static uint8_t gprs_rx_buff[GPRS_RX_BUFF_COUNT];
 static uint16_t gprs_rx_bufflen;
-static uint16_t gnss_rx_bufflen;
+
+uint8_t gnss_rx_buff[GNSS_RX_BUFF_COUNT];
+uint16_t gnss_rx_bufflen;
+mew_GNGLL_Data gngll_data;
+uint8_t buffed_frames = 0;
+
+
 
 void mew_stm32_PINsInit_Hook(void)
 {
@@ -147,15 +152,12 @@ void mew_m26_SendBuff_Hook(uint8_t *buff, uint16_t len)
 }
 void mew_stm32_UARTRecvDone_Hook(uint8_t port)
 {
-//	uint16_t i;
 	if(port == 2)
 	{
-		//缓存内容全部发给用户
-//		for(i = 0; i < gnss_rx_bufflen; i ++)
-//		{
-//			mew_stm32.UARTSendByte(1, gnss_rx_buff[i]);
-//		}
-		gnss_rx_bufflen = 0;
+		if(buffed_frames<10)
+		{
+			buffed_frames++;
+		}	
 	}
 }
 void mew_stm32_UARTRecvByte_Hook(uint8_t port, uint8_t byte)
@@ -169,12 +171,10 @@ void mew_stm32_UARTRecvByte_Hook(uint8_t port, uint8_t byte)
 	//串口2连接GNSS模块
 	if(port == 2)
 	{
-		//一旦符合条件缓存
 		if(gnss_rx_bufflen < GNSS_RX_BUFF_COUNT)
 		{
 			gnss_rx_buff[gnss_rx_bufflen ++]= byte;
 		}
-//		mew_stm32.UARTSendByte(1, byte);
 	}
 	//串口3连接GPRS模块
 	if(port == 3)
@@ -187,43 +187,5 @@ void mew_stm32_UARTRecvByte_Hook(uint8_t port, uint8_t byte)
 		{
 			mew_stm32.UARTSendByte(1, byte);
 		}
-	}
-}
-////////////////////////////////////////////////////////////////
-//用户级抽象钩子函数
-////////////////////////////////////////////////////////////////
-void mew_m26_Reset_Hook(void)
-{
-	mew_board.LED_TX(1);
-	mew_board.LED_RX(1);
-	mew_board.LED_STA(1);
-}
-
-void mew_m26_GPRSConnDone_Hook(void)
-{
-	mew_board.LED_STA(0);
-}
-
-void mew_m26_SocketConnDone_Hook(uint8_t ch)
-{
-	if(ch == 0)
-	{
-		mew_board.LED_TX(0);
-		mew_board.LED_RX(0);
-		mew_m26.SocketSend(ch, (uint8_t *)"mc20_conn_done\n", 15);
-	}
-}
-
-void mew_m26_SocketHeartbeat_Hook(uint8_t ch)
-{
-	mew_m26.SocketSend(ch, (uint8_t *)"mc20_hb\n", 8);
-}
-
-void mew_m26_SocketDisconn_Hook(uint8_t ch, int8_t reason)
-{
-	if(ch == 0)
-	{
-		mew_board.LED_TX(1);
-		mew_board.LED_RX(1);
 	}
 }
