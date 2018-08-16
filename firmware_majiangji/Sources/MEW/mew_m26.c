@@ -8,7 +8,7 @@
 #define LIB_VERSION "mewm26lib_v1.0"
 
 #define AT_CMD_TIMEOUT_MSEC		300
-#define DNSGIP_TIMEOUT_SEC		60
+#define DNSGIP_TIMEOUT_SEC		30
 #define CHANNEL_COUNT					6
 
 static uint8_t isRecv;
@@ -27,14 +27,9 @@ static uint64_t lastReadTime[CHANNEL_COUNT];
 static uint64_t lastConnOpTime;
 static mew_buff_Handle_t sendStream;
 static mew_buff_Handle_t recvStream;
-//static mew_buff_Handle_t heartbeatPack;
-//static mew_buff_Handle_t libVer;
 
 static int8_t sendingChannel;
 static uint8_t socketConnectingChannel;
-
-//static uint8_t hbLength;
-//static uint8_t hbContent[16];
 
 static uint8_t socketStateGet(uint8_t ch);
 static void socketStateSet(uint8_t ch);
@@ -74,13 +69,16 @@ __weak void mew_m26_GPRSConnErr_Hook(void){}
 __weak void mew_m26_SocketConnDone_Hook(uint8_t ch){}
 __weak void mew_m26_SocketConnErr_Hook(uint8_t ch, int8_t reason){}
 __weak void mew_m26_SocketDisconn_Hook(uint8_t ch, int8_t reason){}
+	
 __weak void mew_m26_SocketHeartbeat_Hook(uint8_t ch)
 {
-	socketPush(ch, "*", 1); 
+	socketPush(ch, (uint8_t *)"*", 1); 
 }
+
 __weak void mew_m26_SocketSendStart_Hook(uint8_t ch){}
 __weak void mew_m26_SocketSendDone_Hook(uint8_t ch){}
 __weak void mew_m26_SocketSendErr_Hook(uint8_t ch){}
+	
 __weak void mew_m26_SocketRecvStart_Hook(uint8_t ch){}
 __weak void mew_m26_SocketRecvDone_Hook(uint8_t ch, uint8_t *buff, uint16_t len){}
 __weak void mew_m26_SocketRecvErr_Hook(uint8_t ch){}
@@ -110,12 +108,6 @@ void mew_m26_Init(uint8_t *txbuff, uint16_t *txbufflen, uint8_t *rxbuff, uint16_
 	mew_m26.SocketEnable = socketEnable;
 	mew_m26.SocketEnableGet = socketEnableGet;
 	mew_m26.SocketDisable = socketDisable;
-	
-//	hbContent[0] = '*';
-//	hbLength = 1;
-	
-//	heartbeatPack.pBuff = hbContent;
-//	heartbeatPack.Length = hbLength;
 	
 	mew_m26.HeartbeatInterval_Sec = 60;
 	mew_m26.ConnectionInterval_Sec = 10;
@@ -181,7 +173,7 @@ static int8_t AT_X(char *req, char *resp, uint32_t timeout, uint32_t times)
 		pRecv.pBuff = recvStream.pBuff;		
 		pRecv.Length = *(recvStream.pLength);
 		
-		while(!mew_buff_EndWith(pRecv, pResp) && time1 < timeout)
+		while(mew_buff_Search(pRecv, pResp) < 0 && time1 < timeout)
 		{
 			mew_m26_DelayMS_Hook(1);
 			time1 ++;
@@ -287,7 +279,7 @@ static int8_t AT_QCELLLOC(void)
 	pOK.pBuff = (uint8_t *)ok;
 	pOK.Length = 8;
 	
-  //while(1)
+
   {
 		times = 0;
 		
@@ -383,7 +375,6 @@ static int8_t AT_QIDNSGIP(char *pIP, char *pOut , uint32_t sec)
 	char req[128];
 	char resp[128];
 	char *_r_n = "\r\n";
-//	char *err = "ERROR";
 		
 	int16_t fi, fi_start, fi_stop, fi_add;
 	uint32_t times;
@@ -394,7 +385,6 @@ static int8_t AT_QIDNSGIP(char *pIP, char *pOut , uint32_t sec)
 	mew_buff_Handle_t pRecv;
 	mew_buff_Handle_t p_r_n;
 	mew_buff_Handle_t point;
-//	mwBuffHandle_t pErr;
 
 	sprintf(req, "AT+QIDNSGIP=\"%s\"\r", pIP);
 	sprintf(resp, "AT+QIDNSGIP=\"%s\"\r\r\nOK\r\n\r\n", pIP);
@@ -411,10 +401,7 @@ static int8_t AT_QIDNSGIP(char *pIP, char *pOut , uint32_t sec)
 	point.pBuff = (uint8_t *)".";
 	point.Length = 1;
 	
-//	pErr.pBuff = (uint8_t *)err;
-//	pErr.Length = strlen((char *)pErr.pBuff);
-			
-  //while(1)
+
   {
 		times = 0;
 		
@@ -432,6 +419,7 @@ static int8_t AT_QIDNSGIP(char *pIP, char *pOut , uint32_t sec)
 			pRecv.Length = *(recvStream.pLength);
 			fi = mew_buff_Search(pRecv, pResp);			
 		}
+		times = 0;
 		if(fi >= 0)
 		{
 			fi_start = fi + pResp.Length;
@@ -473,47 +461,7 @@ static int8_t AT_QIDNSGIP(char *pIP, char *pOut , uint32_t sec)
 				}
 			}
 		}
-				
-//		if(point_num == 3)
-//		{
-//			while(fi < 0 && times < sec * 1000)
-//			{
-//				mew_m26_DelayMS_Hook(1);
-//				times ++;
-//				fi = mew_buff_SearchFrom(pRecv, fi_add, p_r_n);
-//			}
-//			if(fi >= 0)
-//			{
-//				fi_stop = fi;
-//				
-//			}
-//		}
-		
-//		times = 0;
-//		*(recvStream.pLength) = 0;
-//		
-//		pRecv.pBuff = recvStream.pBuff;		
-//		pRecv.Length = *(recvStream.pLength);
-//		
-//		fi = -1;
-//		while(fi < 0 && times < sec * 1000)
-//		{
-//			mew_m26_DelayMS_Hook(1);
-//			times ++;
-//			pRecv.Length = *(recvStream.pLength);
-//			fi = mew_buff_Search(pRecv, p_r_n);
-//		}
-//		
-//		if(fi >= 0)
-//		{
-//			memcpy(pOut, pRecv.pBuff, fi);
-//			pOut[fi] = 0;
-//		}
-		
-		//break;
 	}
-	//mwM26DelayMSHook(5000);
-	//memset(RXHandle.hBuff, 0, *(RXHandle.hLength));
 	*(recvStream.pLength) = 0;	
 	return -1;
 }
@@ -549,6 +497,8 @@ static int8_t AT_QIOPEN(uint8_t ch, char *pIP, uint16_t pPORT, uint32_t sec)
 		times = 0;
 		
 		*(recvStream.pLength) = 0;
+		
+		memset(recvStream.pBuff, 0, *recvStream.pLength);
     mew_m26_SendBuff_Hook(pReq.pBuff, pReq.Length);
     
 		mew_m26_DelayMS_Hook(AT_CMD_TIMEOUT_MSEC);
@@ -732,29 +682,11 @@ static int16_t AT_QIRD(uint8_t ch, char *pIP, uint16_t pPORT, uint16_t readMax, 
 		}
 		break;
 	}
-	//memset(RXHandle.hBuff, 0, *(RXHandle.hLength));
 	*(recvStream.pLength) = 0;	
 	return -1;
 }
 
-//static int8_t GPSEnable(void)
-//{
-//	int8_t err_res;
-//	err_res = AT_X("AT+QGNSSC=1\r", "AT+QGNSSC=1\r\r\nOK\r\n", AT_CMD_TIMEOUT_MSEC, 3);
-////	if(err_res)
-//	{
-//		return err_res;
-//	}
-//}
-//static int8_t GPSDisable(void)
-//{
-//	int8_t err_res;
-//	err_res = AT_X("AT+QGNSSC=0\r", "AT+QGNSSC=1\r\r\nOK\r\n", AT_CMD_TIMEOUT_MSEC, 3);
-////	if(err_res)
-//	{
-//		return err_res;
-//	}
-//}
+
 static int8_t reset(void)
 {
 	int8_t err_res;
@@ -804,6 +736,7 @@ static int8_t GPRSConn(void)
 	{
 		return err_res;
 	}
+
 	err_res = AT_X("AT+QIDNSIP=1\r", "AT+QIDNSIP=1\r\r\nOK\r\n", AT_CMD_TIMEOUT_MSEC, 3);
 	if(err_res)
 	{
@@ -824,7 +757,14 @@ static int8_t GPRSConn(void)
 	{
 		return err_res;
 	}
-
+	if(mew_m26.EnableLoc)
+	{
+		err_res = AT_QCELLLOC();
+		if(err_res)
+		{
+			return err_res;
+		}
+	}
 	
 	return 0;
 }
@@ -833,7 +773,7 @@ static int8_t socketConn(uint8_t ch)
 {
 	int8_t ret = AT_QIOPEN(ch, mew_m26.IP[ch], mew_m26.PORT[ch], 10);
 	lastConnTime[ch] = *systicks;
-	if(0<= ret)
+	if(0 == ret)
 	{
 		lastCommTime[ch] = *systicks;
 	}
@@ -881,9 +821,7 @@ static uint8_t is_recv(void)
 {
 	return isRecv;
 }
-//static int8_t GPSParse(char *info)
-//{
-//}
+
 static int8_t is_vaild_ip(char *str)
 {
 	uint8_t c = 0;
@@ -917,10 +855,6 @@ static void socket_Schedule_NoOS(void)
 		{
 			mew_m26.WorkState = M26_WS_RESET;
 			mew_m26_Reset_Hook();
-//			if(mew_m26.EnableLoc)
-			{
-//				GPSEnable();
-			}
 		}
 	}		
 	if(mew_m26.WorkState == M26_WS_GPRS_CONNECTING)
@@ -940,34 +874,36 @@ static void socket_Schedule_NoOS(void)
 	{
 		if(0 > is_vaild_ip(mew_m26.IP[socketConnectingChannel]))
 		{
-			if(0 < AT_QIDNSGIP(mew_m26.ADDR[socketConnectingChannel], mew_m26.IP[socketConnectingChannel], DNSGIP_TIMEOUT_SEC))
+			if(0 > AT_QIDNSGIP(mew_m26.ADDR[socketConnectingChannel], mew_m26.IP[socketConnectingChannel], DNSGIP_TIMEOUT_SEC))
 			{
-				mew_m26_SocketConnErr_Hook(socketConnectingChannel, -2);
-				//return 0;
+				mew_m26_SocketConnErr_Hook(socketConnectingChannel, -2);				
 			}
 		}
-		if(0 <= AT_CLOSE(socketConnectingChannel, AT_CMD_TIMEOUT_MSEC))
-		{
-			socketStateClr(socketConnectingChannel);
-		}
 		else
 		{
-			mew_m26_SocketConnErr_Hook(socketConnectingChannel, -3);
-			//close fail
-		}	
-		res = socketConn(socketConnectingChannel);
-		lastConnOpTime = *systicks;
-		if(res>= 0)
-		{
-			socketStateSet(socketConnectingChannel);
-			mew_m26_SocketConnDone_Hook(socketConnectingChannel);
-			//gprs conn ok
+			if(0 <= AT_CLOSE(socketConnectingChannel, AT_CMD_TIMEOUT_MSEC))
+			{
+				socketStateClr(socketConnectingChannel);
+			}
+			else
+			{
+				mew_m26_SocketConnErr_Hook(socketConnectingChannel, -3);
+				//close fail
+			}	
+			res = socketConn(socketConnectingChannel);
+			lastConnOpTime = *systicks;
+			if(res >= 0)
+			{
+				socketStateSet(socketConnectingChannel);
+				mew_m26_SocketConnDone_Hook(socketConnectingChannel);
+				//gprs conn ok
+			}
+			else
+			{
+				mew_m26_SocketConnErr_Hook(socketConnectingChannel, res);
+			}
+			mew_m26.WorkState = M26_WS_IDLE;	
 		}
-		else
-		{
-			mew_m26_SocketConnErr_Hook(socketConnectingChannel, -1);
-		}
-		mew_m26.WorkState = M26_WS_IDLE;
 	}
 	
 	if(mew_m26.WorkState == M26_WS_RESET)
@@ -1017,12 +953,14 @@ static void socket_Schedule_NoOS(void)
 							//¶ÁÊý¾Ý
 							if(*systicks - lastReadTime[i] >= mew_m26.ReadInterval_MilliSec)
 							{
-								if(0 > socketRecv(i))
+								res = socketRecv(i);
+								if(res < 0)
 								{
 									socketStateClr(i);
 									mew_m26_SocketRecvErr_Hook(i);
 									mew_m26_SocketDisconn_Hook(i, -1);
 								}
+								
 							}
 							else
 							{

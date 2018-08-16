@@ -425,8 +425,8 @@ void mew_stm32_Init(uint32_t uart1speed, uint32_t uart2speed, uint32_t uart3spee
 	mew_stm32_PINsInit();
 	
 	mew_stm32_UART1Init(uart1speed);
-	mew_stm32_UART2Init(uart2speed);
-	mew_stm32_UART3Init(uart3speed);	
+//	mew_stm32_UART2Init(uart2speed);
+//	mew_stm32_UART3Init(uart3speed);	
 	mew_stm32_ADC1Init();
 	mew_stm32_SystickInit();
 	

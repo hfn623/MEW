@@ -155,8 +155,8 @@ void mew_board_Init(void)
 	mew_stm32.DelayMS(100);
 	Relay_Neg_Toggle(0);
 	
-	sprintf(tmpstr, "user event: board init\n");
-	mew_stm32.UARTSendString(3, tmpstr);
+//	sprintf(tmpstr, "user event: board init\n");
+//	mew_stm32.UARTSendString(3, tmpstr);
 }
 ////////////////////////////////////////////////////////////////
 //板级抽象钩子函数
@@ -201,10 +201,10 @@ void mew_stm32_UARTRecvByte_Hook(uint8_t port, uint8_t byte)
 		{
 			gprs_rx_buff[gprs_rx_bufflen ++]= byte;
 		}
-		if(debug && mew_m26.IsReceiving() == 0)
-		{
-			mew_stm32.UARTSendByte(3, byte);
-		}
+//		if(debug && mew_m26.IsReceiving() == 0)
+//		{
+//			mew_stm32.UARTSendByte(3, byte);
+//		}
 	}
 }
 ////////////////////////////////////////////////////////////////
@@ -216,7 +216,7 @@ void mew_m26_GPRSConnDone_Hook(void)
 	mew_board.LED_TX(0);
 	mew_board.LED_RX(0);
 	
-	mew_stm32.UARTSendString(3, "lib event: gprs conn done\n");
+//	mew_stm32.UARTSendString(3, "lib event: gprs conn done\n");
 }
 
 void mew_m26_GPRSConnErr_Hook(void)
@@ -226,7 +226,7 @@ void mew_m26_GPRSConnErr_Hook(void)
 	mew_board.LED_RX(1);
 	NVIC_SystemReset();
 	
-	mew_stm32.UARTSendString(3, "lib event: gprs conn err\n");
+//	mew_stm32.UARTSendString(3, "lib event: gprs conn err\n");
 }
 
 void mew_m26_ResetStart_Hook(void)
@@ -235,7 +235,7 @@ void mew_m26_ResetStart_Hook(void)
 	mew_board.LED_TX(1);
 	mew_board.LED_RX(1);
 	
-	mew_stm32.UARTSendString(3, "lib event: gprs reset\n");
+//	mew_stm32.UARTSendString(3, "lib event: gprs reset\n");
 }
 
 
@@ -243,15 +243,15 @@ void mew_m26_SocketSendStart_Hook(uint8_t ch)
 {
 	mew_board.LED_TX(1);
 	
-	sprintf(tmpstr, "lib event: socket%d send start\n", ch);
-	mew_stm32.UARTSendString(3, tmpstr);
+//	sprintf(tmpstr, "lib event: socket%d send start\n", ch);
+//	mew_stm32.UARTSendString(3, tmpstr);
 }
 void mew_m26_SocketSendDone_Hook(uint8_t ch)
 {
 	mew_board.LED_TX(0);
 	
-	sprintf(tmpstr, "lib event: socket%d send done\n", ch);
-	mew_stm32.UARTSendString(3, tmpstr);
+//	sprintf(tmpstr, "lib event: socket%d send done\n", ch);
+//	mew_stm32.UARTSendString(3, tmpstr);
 }
 void mew_m26_SocketSendErr_Hook(uint8_t ch)
 {
@@ -259,8 +259,8 @@ void mew_m26_SocketSendErr_Hook(uint8_t ch)
 	mew_board.LED_TX(1);
 	mew_board.LED_RX(1);
 	
-	sprintf(tmpstr, "lib event: socket%d send err\n", ch);
-	mew_stm32.UARTSendString(3, tmpstr);
+//	sprintf(tmpstr, "lib event: socket%d send err\n", ch);
+//	mew_stm32.UARTSendString(3, tmpstr);
 }
 void mew_m26_SocketHeartbeat_Hook(uint8_t ch)
 {
@@ -284,15 +284,15 @@ void mew_m26_SocketHeartbeat_Hook(uint8_t ch)
 	
 	free(tmpbuf);
 	
-	sprintf(tmpstr, "\nuser event: heardbeat packet upload\n");
-	mew_stm32.UARTSendString(3, tmpstr);
+//	sprintf(tmpstr, "\nuser event: heardbeat packet upload\n");
+//	mew_stm32.UARTSendString(3, tmpstr);
 }
 void mew_m26_SocketRecvStart_Hook(uint8_t ch)
 {
 	mew_board.LED_RX(1);
 	
-	sprintf(tmpstr, "lib event: socket%d recv start\n", ch);
-	mew_stm32.UARTSendString(3, tmpstr);
+//	sprintf(tmpstr, "lib event: socket%d recv start\n", ch);
+//	mew_stm32.UARTSendString(3, tmpstr);
 }
 static uint8_t tmpword[1024];
 void mew_m26_SocketRecvDone_Hook(uint8_t ch, uint8_t *buff, uint16_t len)
@@ -314,8 +314,8 @@ void mew_m26_SocketRecvDone_Hook(uint8_t ch, uint8_t *buff, uint16_t len)
 
 	mew_board.LED_RX(0);
 	
-	sprintf(tmpstr, "lib event: socket%d recv done\n", ch);
-	mew_stm32.UARTSendString(3, tmpstr);
+//	sprintf(tmpstr, "lib event: socket%d recv done\n", ch);
+//	mew_stm32.UARTSendString(3, tmpstr);
 	
 //	bh.pBuff = buff;
 //	bh.Length = len;
@@ -337,23 +337,23 @@ void mew_m26_SocketRecvDone_Hook(uint8_t ch, uint8_t *buff, uint16_t len)
 			memcpy(tmpword, start_idx, tmplen);
 			tmpword[tmplen] = 0;
 		
-			mew_stm32.UARTSendString(3, "\nhandle json pack:\n");
+//			mew_stm32.UARTSendString(3, "\nhandle json pack:\n");
 		
-			mew_stm32.UARTSendByte(3, '\n');
-			for(i = 0; i < tmplen; i ++)
-			{
-				mew_stm32.UARTSendByte(3, '=');
-			}	
-			mew_stm32.UARTSendByte(3, '\n');
-			
-			mew_stm32.UARTSendString(3, (char *)tmpword);
-			
-			mew_stm32.UARTSendByte(3, '\n');
-			for(i = 0; i < tmplen; i ++)
-			{
-				mew_stm32.UARTSendByte(3, '=');
-			}
-			mew_stm32.UARTSendByte(3, '\n');
+//			mew_stm32.UARTSendByte(3, '\n');
+//			for(i = 0; i < tmplen; i ++)
+//			{
+//				mew_stm32.UARTSendByte(3, '=');
+//			}	
+//			mew_stm32.UARTSendByte(3, '\n');
+//			
+//			mew_stm32.UARTSendString(3, (char *)tmpword);
+//			
+//			mew_stm32.UARTSendByte(3, '\n');
+//			for(i = 0; i < tmplen; i ++)
+//			{
+//				mew_stm32.UARTSendByte(3, '=');
+//			}
+//			mew_stm32.UARTSendByte(3, '\n');
 
 			
 			JSONreq = cJSON_Parse((char const *)tmpword);
@@ -380,21 +380,21 @@ void mew_m26_SocketRecvDone_Hook(uint8_t ch, uint8_t *buff, uint16_t len)
 					
 					mew_m26.SocketSend(ch, (uint8_t *)tmpbuf, tmplen);
 					
-					mew_stm32.UARTSendString(3, tmpbuf);
+//					mew_stm32.UARTSendString(3, tmpbuf);
 					
 					cJSON_Delete(JSONresp);
 					
 					free(tmpbuf);
 					
-					sprintf(tmpstr, "\nuser event: server init\n");
-					mew_stm32.UARTSendString(3, tmpstr);
+//					sprintf(tmpstr, "\nuser event: server init\n");
+//					mew_stm32.UARTSendString(3, tmpstr);
 				}
 				if(!strcmp(order->valuestring, "init") && !strcmp(type->valuestring, "reply"))
 				{ 
 					mew_board.LED_STA(1);
 					
-					sprintf(tmpstr, "\nuser event: server init done\n");
-					mew_stm32.UARTSendString(3, tmpstr);
+//					sprintf(tmpstr, "\nuser event: server init done\n");
+//					mew_stm32.UARTSendString(3, tmpstr);
 				}
 				if(!strcmp(order->valuestring, "turn_on") && !strcmp(type->valuestring, "send"))
 				{
@@ -419,21 +419,21 @@ void mew_m26_SocketRecvDone_Hook(uint8_t ch, uint8_t *buff, uint16_t len)
 					
 					mew_m26.SocketSend(ch, (uint8_t *)tmpbuf, tmplen);
 					
-					mew_stm32.UARTSendString(3, tmpbuf);
+//					mew_stm32.UARTSendString(3, tmpbuf);
 					
 					cJSON_Delete(JSONresp);
 					
 					free(tmpbuf);
 					
-					sprintf(tmpstr, "\nuser event: server turn on\n");
-					mew_stm32.UARTSendString(3, tmpstr);
+//					sprintf(tmpstr, "\nuser event: server turn on\n");
+//					mew_stm32.UARTSendString(3, tmpstr);
 				}
 				if(!strcmp(order->valuestring, "turn_on") && !strcmp(type->valuestring, "reply"))
 				{
 					mew_board.LED_STA(1);
 					
-					sprintf(tmpstr, "user event: server turn on done\n");
-					mew_stm32.UARTSendString(3, tmpstr);
+//					sprintf(tmpstr, "user event: server turn on done\n");
+//					mew_stm32.UARTSendString(3, tmpstr);
 				}
 				if(!strcmp(order->valuestring, "turn_off") && !strcmp(type->valuestring, "send"))
 				{
@@ -458,29 +458,29 @@ void mew_m26_SocketRecvDone_Hook(uint8_t ch, uint8_t *buff, uint16_t len)
 					
 					mew_m26.SocketSend(ch, (uint8_t *)tmpbuf, tmplen);
 					
-					mew_stm32.UARTSendString(3, tmpbuf);
+//					mew_stm32.UARTSendString(3, tmpbuf);
 					
 					cJSON_Delete(JSONresp);
 					
 					free(tmpbuf);
 					
-					sprintf(tmpstr, "\nuser event: server turn off\n");
-					mew_stm32.UARTSendString(3, tmpstr);
+//					sprintf(tmpstr, "\nuser event: server turn off\n");
+//					mew_stm32.UARTSendString(3, tmpstr);
 				}
 				if(!strcmp(order->valuestring, "turn_off") && !strcmp(type->valuestring, "reply"))
 				{
 					mew_board.LED_STA(1);
 					
-					sprintf(tmpstr, "user event: server turn off done\n");
-					mew_stm32.UARTSendString(3, tmpstr);
+//					sprintf(tmpstr, "user event: server turn off done\n");
+//					mew_stm32.UARTSendString(3, tmpstr);
 				}
 			}
 			cJSON_Delete(JSONreq);
 		}
 		else
 		{
-			sprintf(tmpstr, "user event: recv invaild json pack\n");
-			mew_stm32.UARTSendString(3, tmpstr);
+//			sprintf(tmpstr, "user event: recv invaild json pack\n");
+//			mew_stm32.UARTSendString(3, tmpstr);
 			break;
 		}
 		
@@ -499,8 +499,8 @@ void mew_m26_SocketRecvErr_Hook(uint8_t ch)
 {
 	mew_board.LED_RX(1);
 	
-	sprintf(tmpstr, "lib event: socket%d recv err\n", ch);
-	mew_stm32.UARTSendString(3, tmpstr);
+//	sprintf(tmpstr, "lib event: socket%d recv err\n", ch);
+//	mew_stm32.UARTSendString(3, tmpstr);
 }
 void mew_m26_SocketDisconn_Hook(uint8_t ch, int8_t reason)
 {
@@ -508,6 +508,6 @@ void mew_m26_SocketDisconn_Hook(uint8_t ch, int8_t reason)
 	mew_board.LED_TX(1);
 	mew_board.LED_STA(0);
 	
-	sprintf(tmpstr, "lib event: socket%d disconn, reason = %d\n", ch, reason);
-	mew_stm32.UARTSendString(3, tmpstr);
+//	sprintf(tmpstr, "lib event: socket%d disconn, reason = %d\n", ch, reason);
+//	mew_stm32.UARTSendString(3, tmpstr);
 }
