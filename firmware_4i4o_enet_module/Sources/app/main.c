@@ -18,10 +18,10 @@ int main( void )
 	
 	APP_Init();
 	
-	RELAY_SET(0, 0);
-	RELAY_SET(1, 0);
-	RELAY_SET(2, 0);
-	RELAY_SET(3, 0);
+//	RELAY_SET(0, 0);
+//	RELAY_SET(1, 0);
+//	RELAY_SET(2, 0);
+//	RELAY_SET(3, 0);
 	
 	vTaskStartScheduler();		
 	
