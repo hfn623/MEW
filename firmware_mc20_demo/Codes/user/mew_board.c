@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
-uint8_t debug = 0;
+uint8_t debug = 1;
 
 mew_board_Handle_t mew_board;
 
@@ -21,7 +21,7 @@ static uint16_t gprs_rx_bufflen;
 uint8_t gnss_rx_buff[GNSS_RX_BUFF_COUNT];
 uint16_t gnss_rx_bufflen;
 mew_GNGLL_Data gngll_data;
-uint8_t buffed_frames = 0;
+uint8_t gnss_frames = 0;
 
 
 
@@ -51,6 +51,8 @@ void mew_stm32_PINsInit_Hook(void)
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Init(GPIOB, &GPIO_InitStructure);  
+	
+	GPIO_WriteBit(GPIOB, GPIO_Pin_9, Bit_RESET);
 
 	// BUSY
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
@@ -63,24 +65,32 @@ void mew_stm32_PINsInit_Hook(void)
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Init(GPIOA, &GPIO_InitStructure);  
+	
+	GPIO_WriteBit(GPIOA, GPIO_Pin_7, Bit_RESET);
 
 	// LED RXD
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Init(GPIOA, &GPIO_InitStructure);  
+	
+	GPIO_WriteBit(GPIOA, GPIO_Pin_6, Bit_RESET);
 
 	// LED STA
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Init(GPIOB, &GPIO_InitStructure); 
+	
+	GPIO_WriteBit(GPIOB, GPIO_Pin_0, Bit_RESET);
 
 	// net led enable
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Init(GPIOB, &GPIO_InitStructure); 
+	
+	GPIO_WriteBit(GPIOB, GPIO_Pin_1, Bit_RESET);
 }
 static void led_sta(uint8_t state)
 {
@@ -133,7 +143,7 @@ void mew_board_Init(void)
 	mew_m26_Init(
 	gprs_tx_buff, &gprs_tx_bufflen,
 	gprs_rx_buff, &gprs_rx_bufflen,
-	&mew_stm32.Nowticks);
+	&mew_stm32.Nowticks);	
 }
 ////////////////////////////////////////////////////////////////
 //板级抽象钩子函数
@@ -154,9 +164,9 @@ void mew_stm32_UARTRecvDone_Hook(uint8_t port)
 {
 	if(port == 2)
 	{
-		if(buffed_frames<10)
+		if(gnss_frames<10)
 		{
-			buffed_frames++;
+			gnss_frames++;
 		}	
 	}
 }

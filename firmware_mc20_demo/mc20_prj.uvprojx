@@ -336,7 +336,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_MD, USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Codes\MEW;.\Codes\ST;.\Codes\user</IncludePath>
+              <IncludePath>.\Codes\MEW;.\Codes\ST;.\Codes\cJSON;.\Codes\user</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -380,16 +380,6 @@
         <Group>
           <GroupName>MEW</GroupName>
           <Files>
-            <File>
-              <FileName>mew_board.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Codes\MEW\mew_board.c</FilePath>
-            </File>
-            <File>
-              <FileName>mew_board.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Codes\MEW\mew_board.h</FilePath>
-            </File>
             <File>
               <FileName>mew_buff.c</FileName>
               <FileType>1</FileType>
@@ -668,6 +658,31 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>cJSON</GroupName>
+          <Files>
+            <File>
+              <FileName>cJSON.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Codes\cJSON\cJSON.c</FilePath>
+            </File>
+            <File>
+              <FileName>cJSON.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Codes\cJSON\cJSON.h</FilePath>
+            </File>
+            <File>
+              <FileName>cJSON_Utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Codes\cJSON\cJSON_Utils.c</FilePath>
+            </File>
+            <File>
+              <FileName>cJSON_Utils.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Codes\cJSON\cJSON_Utils.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>user</GroupName>
           <Files>
             <File>
@@ -719,6 +734,16 @@
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Codes\user\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>mew_board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Codes\user\mew_board.c</FilePath>
+            </File>
+            <File>
+              <FileName>mew_board.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Codes\user\mew_board.h</FilePath>
             </File>
           </Files>
         </Group>

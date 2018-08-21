@@ -3,11 +3,6 @@
 
 #include "stdint.h"
 
-
-
-
-
-
 typedef enum{
 	M26_WS_IDLE,
 	M26_WS_RESETING,
@@ -24,6 +19,7 @@ typedef enum{
 
 typedef struct mew_m26_Handle_t
 {
+	
 	char ADDR[6][64];
 	char IP[6][15];
 	uint16_t PORT[6];
@@ -55,7 +51,6 @@ typedef struct mew_m26_Handle_t
 
 extern mew_m26_Handle_t mew_m26;
 
-
 void *mew_m26_Malloc_Hook(uint16_t size);
 void mew_m26_Free_Hook(void *p);
 void mew_m26_MallocErr_Hook(void);
@@ -63,28 +58,29 @@ void mew_m26_MallocErr_Hook(void);
 void mew_m26_DelayMS_Hook(uint32_t timespan);
 void mew_m26_SendBuff_Hook(uint8_t *buff, uint16_t len);
 
-void mew_m26_ResetStart_Hook(void);
-void mew_m26_Reset_Hook(void);
-void mew_m26_IdleHook(void);
+__weak void mew_m26_ResetStart_Hook(void);
+__weak void mew_m26_Reset_Hook(void);
+__weak void mew_m26_IdleHook(void);
 
-void mew_m26_GPRSConnDone_Hook(void);
-void mew_m26_GPRSConnErr_Hook(void);
+__weak void mew_m26_GPRSConnDone_Hook(void);
+__weak void mew_m26_GPRSConnErr_Hook(void);
 
-void mew_m26_SocketConnDone_Hook(uint8_t ch);
-void mew_m26_SocketConnErr_Hook(uint8_t ch, int8_t reason);
-void mew_m26_SocketDisconn_Hook(uint8_t ch, int8_t reason);
-void mew_m26_SocketHeartbeat_Hook(uint8_t ch);
-void mew_m26_SocketSendStart_Hook(uint8_t ch);
-void mew_m26_SocketSendDone_Hook(uint8_t ch);
-void mew_m26_SocketSendErr_Hook(uint8_t ch);
-void mew_m26_SocketRecvStart_Hook(uint8_t ch);
-void mew_m26_SocketRecvDone_Hook(uint8_t ch, uint8_t *buff, uint16_t len);
-void mew_m26_SocketRecvErr_Hook(uint8_t ch);
-void mew_m26_SocketRecvParseErr_Hook(uint8_t ch);
+__weak void mew_m26_SocketConnDone_Hook(uint8_t ch);
+__weak void mew_m26_SocketConnErr_Hook(uint8_t ch, int8_t reason);
+__weak void mew_m26_SocketDisconn_Hook(uint8_t ch, int8_t reason);
 
+__weak void mew_m26_SocketHeartbeat_Hook(uint8_t ch);
 
+__weak void mew_m26_SocketSendStart_Hook(uint8_t ch);
+__weak void mew_m26_SocketSendDone_Hook(uint8_t ch);
+__weak void mew_m26_SocketSendErr_Hook(uint8_t ch);
 
+__weak void mew_m26_SocketRecvStart_Hook(uint8_t ch);
+__weak void mew_m26_SocketRecvDone_Hook(uint8_t ch, uint8_t *buff, uint16_t len);
+__weak void mew_m26_SocketRecvErr_Hook(uint8_t ch);
+__weak void mew_m26_SocketRecvParseErr_Hook(uint8_t ch);
 
 void mew_m26_Init(uint8_t *txbuff, uint16_t *txbufflen, uint8_t *rxbuff, uint16_t *rxbufflen, uint64_t *sticks);
+
 
 #endif

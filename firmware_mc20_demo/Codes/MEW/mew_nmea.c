@@ -46,8 +46,7 @@ double mew_NMEA_string2double(char *in)
 		
 		factor = pow(10, len - (p - in) - 1);
 		ap /= factor;
-		bp += ap;
-		
+		bp += ap;		
 	}
 	else
 	{
@@ -56,6 +55,18 @@ double mew_NMEA_string2double(char *in)
 	
 	return bp;
 }
+double mew_NMEA_dm2d(double in)
+{
+	int mp;
+	double ap;
+	mp = in;
+	ap = in - mp;
+	ap += mp % 100;
+	ap /= 60;
+	mp = in / 100;
+	return mp + ap;
+}
+
 int8_t mew_NMEA_Parse_GNGLL(char *in, mew_GNGLL_Data *glldata)
 {
 	//$GNGLL,4543.4614,N,12636.4216,E,044025.000,A,A*40
@@ -65,6 +76,7 @@ int8_t mew_NMEA_Parse_GNGLL(char *in, mew_GNGLL_Data *glldata)
 	char *word_begin, *word_end;
 	
 	uint8_t i;
+	uint8_t cp_len;
 	
 	pbase = strstr(in, "$GNGLL");
 	
@@ -91,12 +103,21 @@ int8_t mew_NMEA_Parse_GNGLL(char *in, mew_GNGLL_Data *glldata)
 			return -2;
 		}
 		
-		memcpy(out[i], word_begin + 1, word_end - word_begin - 1);
+		cp_len = word_end - word_begin - 1;
+		if(cp_len > 0)
+		{
+			memcpy(out[i], word_begin + 1, cp_len);
+		}
+		else
+		{
+			return -3;
+		}
 	}
 	
-	glldata->Latitude = mew_NMEA_string2double(out[0]);
-	glldata->Longitude = mew_NMEA_string2double(out[2]);
+	glldata->Longitude = mew_NMEA_dm2d(mew_NMEA_string2double(out[2]));
+	glldata->Latitude = mew_NMEA_dm2d(mew_NMEA_string2double(out[0]));	
 	glldata->UTC = mew_NMEA_string2double(out[4]);
 	glldata->Vaild = out[5][0] == 'A' ? 1:0;
+	
 	return 0;
 }
