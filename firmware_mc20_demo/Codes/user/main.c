@@ -15,6 +15,7 @@ cJSON_Hooks cjson_hooks;
 uint8_t login = 0;
 
 static char tmpstr[1024];
+static uint8_t tmpword[1024];
 
 extern uint16_t gnss_rx_bufflen;
 extern uint8_t gnss_rx_buff[GNSS_RX_BUFF_COUNT];
@@ -80,7 +81,7 @@ int main(void)
 			gnss_rx_bufflen = 0;
 			gnss_frames = 0;
 		}
-		if(!sending)
+		if(!sending && login)
 		{
 			if(mew_stm32.Nowticks - lastUpTicks > 1000 * 10)
 			{
@@ -107,6 +108,8 @@ void mew_m26_GPRSConnDone_Hook(void)
 
 void mew_m26_SocketConnDone_Hook(uint8_t ch)
 {
+	login = 0;
+	
 	mew_board.LED_TX(0);
 	mew_board.LED_RX(0);
 	
@@ -167,7 +170,7 @@ void mew_m26_SocketRecvStart_Hook(uint8_t ch)
 	sprintf(tmpstr, "lib event: socket%d recv start\n", ch);
 	mew_stm32.UARTSendString(1, tmpstr);
 }
-static uint8_t tmpword[1024];
+
 void mew_m26_SocketRecvDone_Hook(uint8_t ch, uint8_t *buff, uint16_t len)
 {	
 	cJSON *JSONreq, *JSONresp;
@@ -212,6 +215,10 @@ void mew_m26_SocketRecvDone_Hook(uint8_t ch, uint8_t *buff, uint16_t len)
 				
 				free(tmpbuf);
 				
+				
+			}
+			else if(!strcmp(type->valuestring, "allow"))
+			{
 				login = 1;
 			}
 			cJSON_Delete(JSONreq);
@@ -240,6 +247,8 @@ void mew_m26_SocketRecvErr_Hook(uint8_t ch)
 }
 void mew_m26_SocketDisconn_Hook(uint8_t ch, int8_t reason)
 {
+	login = 0;
+	
 	mew_board.LED_RX(1);
 	mew_board.LED_TX(1);
 	

@@ -829,8 +829,8 @@ static void socketPush(uint8_t ch, uint8_t *txbuff, uint16_t len)
 {
 	//if(sendStream.Length > 0)
 	{
-		memcpy(sendStream.pBuff, txbuff, len);		
-		sendStream.Length = len;		
+		memcpy(sendStream.pBuff + sendStream.Length, txbuff, len);		
+		sendStream.Length += len;		
 		sendingChannel = ch;
 	}
 }
