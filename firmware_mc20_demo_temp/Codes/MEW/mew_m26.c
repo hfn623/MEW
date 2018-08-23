@@ -5,11 +5,18 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#define LIB_VERSION "mewm26lib_v1.0"
+#define LIB_VERSION "mewm26lib_v1.1"
+/*
+
+(2018.08.23) v1.0: first version
+(2018.10.30) v1.1: add count of tcp connect fail, if fail then reconnect gprs
+
+*/
 
 #define AT_CMD_TIMEOUT_MSEC		300
 #define DNSGIP_TIMEOUT_SEC		30
 #define CHANNEL_COUNT					6
+#define MAX_SOCK_CONN_TIMES		3
 
 static uint8_t isRecv;
 
@@ -17,8 +24,8 @@ mew_m26_Handle_t mew_m26;
 
 static uint64_t *systicks;
 
-static uint8_t socketEnableBits;
-static uint8_t socketStateBits;
+static uint8_t socketEnableBits;//socket enable mask
+static uint8_t socketStateBits;//socket connection state
 
 static uint64_t lastCommTime[CHANNEL_COUNT];
 static uint64_t lastConnTime[CHANNEL_COUNT];
@@ -27,6 +34,8 @@ static uint64_t lastReadTime[CHANNEL_COUNT];
 static uint64_t lastConnOpTime;
 static mew_buff_Handle_t sendStream;
 static mew_buff_Handle_t recvStream;
+
+static uint8_t socketConnFailTimes;
 
 static int8_t sendingChannel;
 static uint8_t socketConnectingChannel;
@@ -756,11 +765,12 @@ static int8_t GPRSConn(void)
 	{
 		return err_res;
 	}
+	/*
 	err_res = AT_X("AT+QGNSSC=1\r", "AT+QGNSSC=1\r\r\nOK\r\n", AT_CMD_TIMEOUT_MSEC, 3);
 	if(err_res)
 	{
 		return err_res;
-	}
+	}*/
 	err_res = AT_X("AT+CPIN?\r", "AT+CPIN?\r\r\n+CPIN: READY\r\n\r\nOK\r\n", AT_CMD_TIMEOUT_MSEC, 3);
 	if(err_res)
 	{
@@ -895,144 +905,160 @@ static void socket_Schedule_NoOS(void)
 	uint8_t i;
 	int8_t res;
 	
-	if(mew_m26.WorkState == M26_WS_RESETING)
-	{		
-		mew_m26_ResetStart_Hook();
-		if(0 <= reset())
-		{
-			mew_m26.WorkState = M26_WS_RESET;
-			mew_m26_Reset_Hook();
-		}
-	}		
-	if(mew_m26.WorkState == M26_WS_GPRS_CONNECTING)
+	switch (mew_m26.WorkState)
 	{
-		if(0 <= GPRSConn())
-		{			
-			mew_m26_GPRSConnDone_Hook();
-			mew_m26.WorkState = M26_WS_GPRS_CONNECTED;
-		}
-		else
-		{
-			mew_m26_GPRSConnErr_Hook();
-			mew_m26.WorkState = M26_WS_RESETING;
-		}
-	}
-	if(mew_m26.WorkState == M26_WS_TCP_CONNECTING)
-	{
-		if(0 > is_vaild_ip(mew_m26.IP[socketConnectingChannel]))
-		{
-			if(0 > AT_QIDNSGIP(mew_m26.ADDR[socketConnectingChannel], mew_m26.IP[socketConnectingChannel], DNSGIP_TIMEOUT_SEC))
+		case M26_WS_RESETING:
+			mew_m26_ResetStart_Hook();
+			if(0 <= reset())
 			{
-				mew_m26_SocketConnErr_Hook(socketConnectingChannel, -2);				
+				mew_m26.WorkState = M26_WS_RESET;
+				mew_m26_Reset_Hook();
 			}
-		}
-		else
-		{
-			if(0 <= AT_CLOSE(socketConnectingChannel, AT_CMD_TIMEOUT_MSEC))
-			{
-				socketStateClr(socketConnectingChannel);
+			break;
+			
+		case M26_WS_GPRS_CONNECTING:
+			if(0 <= GPRSConn())
+			{			
+				socketConnFailTimes = 0;
+				mew_m26_GPRSConnDone_Hook();
+				mew_m26.WorkState = M26_WS_GPRS_CONNECTED;
 			}
 			else
 			{
-				mew_m26_SocketConnErr_Hook(socketConnectingChannel, -3);
-				//close fail
-			}	
-			res = socketConn(socketConnectingChannel);
-			lastConnOpTime = *systicks;
-			if(res >= 0)
-			{
-				socketStateSet(socketConnectingChannel);
-				mew_m26_SocketConnDone_Hook(socketConnectingChannel);
-				//gprs conn ok
+				mew_m26_GPRSConnErr_Hook();
+				mew_m26.WorkState = M26_WS_RESETING;
 			}
-			else
+			break;
+			
+		case M26_WS_TCP_CONNECTING:
+			if(0 > is_vaild_ip(mew_m26.IP[socketConnectingChannel]))
 			{
-				mew_m26_SocketConnErr_Hook(socketConnectingChannel, res);
-			}
-			mew_m26.WorkState = M26_WS_IDLE;	
-		}
-	}
-	
-	if(mew_m26.WorkState == M26_WS_RESET)
-	{
-		mew_m26.WorkState = M26_WS_GPRS_CONNECTING;
-	}	
-	if(mew_m26.WorkState == M26_WS_GPRS_CONNECTED)
-	{		
-		mew_m26.WorkState = M26_WS_IDLE;
-	}
-	if(mew_m26.WorkState == M26_WS_TCP_CONNECTED)
-	{
-		mew_m26.WorkState = M26_WS_IDLE;
-	}
-	if(mew_m26.WorkState == M26_WS_IDLE)
-	{
-		for(i = 0; i < CHANNEL_COUNT; i ++)
-		{
-			if(socketEnableGet(i))//通道激活
-			{
-				if(socketStateGet(i))//通道已连接
+				// isn't vaild IP
+				if(0 > AT_QIDNSGIP(mew_m26.ADDR[socketConnectingChannel], mew_m26.IP[socketConnectingChannel], DNSGIP_TIMEOUT_SEC))
 				{
-					if(sendStream.Length > 0 && sendingChannel == i)//如果有数据待发送
+					mew_m26_SocketConnErr_Hook(socketConnectingChannel, -2);				
+				}
+			}
+			else
+			{
+				if(0 <= AT_CLOSE(socketConnectingChannel, AT_CMD_TIMEOUT_MSEC))
+				{
+					socketStateClr(socketConnectingChannel);
+					
+					res = socketConn(socketConnectingChannel);
+					lastConnOpTime = *systicks;
+					if(res >= 0)
 					{
-						mew_m26_SocketSendStart_Hook(i);
-						if(0 > socketSend(i, sendStream.pBuff, sendStream.Length))
+						//gprs conn ok
+						socketConnFailTimes = 0;
+						socketStateSet(socketConnectingChannel);
+						mew_m26_SocketConnDone_Hook(socketConnectingChannel);					
+						mew_m26.WorkState = M26_WS_IDLE;	
+					}
+					else
+					{
+						mew_m26_SocketConnErr_Hook(socketConnectingChannel, res);
+						socketConnFailTimes++;
+						if(socketConnFailTimes >= MAX_SOCK_CONN_TIMES)
 						{
-							socketStateClr(i);
-							mew_m26_SocketSendErr_Hook(i);
-							mew_m26_SocketDisconn_Hook(i, -2);
-						}
-						else
-						{
-							mew_m26_SocketSendDone_Hook(i);
-							sendStream.Length = 0;
+							if(!socketStateBits)
+							{
+								mew_m26.WorkState = M26_WS_GPRS_CONNECTING;
+							}
 						}
 					}
-					else//没有数据需要发送
+				}
+				else
+				{
+					mew_m26_SocketConnErr_Hook(socketConnectingChannel, -3);				
+					//close fail
+					//retry socket conn
+				}
+			}
+			break;
+			
+		case M26_WS_IDLE:
+			for(i = 0; i < CHANNEL_COUNT; i ++)
+			{
+				if(socketEnableGet(i))//通道激活
+				{
+					if(socketStateGet(i))//通道已连接
 					{
-						//长时间没有数据交互，发送心跳包
-						if(*systicks - lastCommTime[i] >= 1000 * mew_m26.HeartbeatInterval_Sec)
+						if(sendStream.Length > 0 && sendingChannel == i)//如果有数据待发送
 						{
-							mew_m26_SocketHeartbeat_Hook(i);							
-						}
-						else//空闲
-						{						
-							//读数据
-							if(*systicks - lastReadTime[i] >= mew_m26.ReadInterval_MilliSec)
+							mew_m26_SocketSendStart_Hook(i);
+							if(0 > socketSend(i, sendStream.pBuff, sendStream.Length))
 							{
-								res = socketRecv(i);
-								if(res < 0)
-								{
-									socketStateClr(i);
-									mew_m26_SocketRecvErr_Hook(i);
-									mew_m26_SocketDisconn_Hook(i, -1);
-								}
-								
+								socketStateClr(i);
+								mew_m26_SocketSendErr_Hook(i);
+								mew_m26_SocketDisconn_Hook(i, -2);
 							}
 							else
 							{
-								//什么事都没有
+								mew_m26_SocketSendDone_Hook(i);
+								sendStream.Length = 0;
 							}
 						}
-					}
-					//Locking = 0;
-				}
-				else//通道未连接
-				{
-					if(*systicks - lastConnOpTime >= 1000 * mew_m26.ConnectionInterval_Sec)
-					{
-						if(*systicks - lastConnTime[i] >= 1000 * mew_m26.ConnectionInterval_Sec)
+						else//没有数据需要发送
 						{
-							//socketStateClr(i);
-							socketConnectingChannel = i;
-							mew_m26.WorkState = M26_WS_TCP_CONNECTING;
-							
-							break;
+							//长时间没有数据交互，发送心跳包
+							if(*systicks - lastCommTime[i] >= 1000 * mew_m26.HeartbeatInterval_Sec)
+							{
+								mew_m26_SocketHeartbeat_Hook(i);							
+							}
+							else//空闲
+							{						
+								//读数据
+								if(*systicks - lastReadTime[i] >= mew_m26.ReadInterval_MilliSec)
+								{
+									res = socketRecv(i);
+									if(res < 0)
+									{
+										socketStateClr(i);
+										mew_m26_SocketRecvErr_Hook(i);
+										mew_m26_SocketDisconn_Hook(i, -1);
+									}								
+								}
+								else
+								{
+									//什么事都没有
+								}
+							}
+						}
+						//Locking = 0;
+					}
+					else//通道未连接
+					{
+						if(*systicks - lastConnOpTime >= 1000 * mew_m26.ConnectionInterval_Sec)
+						{
+							if(*systicks - lastConnTime[i] >= 1000 * mew_m26.ConnectionInterval_Sec)
+							{
+								//socketStateClr(i);
+								socketConnectingChannel = i;
+								mew_m26.WorkState = M26_WS_TCP_CONNECTING;
+								
+								break;
+							}
 						}
 					}
 				}
 			}
-		}
+			break;
+		default:
+			break;
+	}
+	
+	switch(mew_m26.WorkState)
+	{
+		case M26_WS_RESET:
+			mew_m26.WorkState = M26_WS_GPRS_CONNECTING;
+			break;
+		case M26_WS_GPRS_CONNECTED:
+		case M26_WS_TCP_CONNECTED:
+			mew_m26.WorkState = M26_WS_IDLE;
+			break;
+		default:
+			break;
 	}
 }
 

@@ -11,6 +11,8 @@
 
 #include "cJSON.h"
 
+#define FILTER_NUM 100
+
 uint8_t login = 0;
 uint8_t sending = 0;
 int8_t located = 0;
@@ -46,6 +48,98 @@ void upLocInfo(void)
 	free(tmpbuf);
 }
 
+static uint16_t find_max(uint16_t *list, uint16_t count)
+{
+	uint16_t i;
+	uint16_t idx;
+	uint16_t max;
+	max = list[0];
+	idx = 0;
+	for(i = 0; i < count; i ++)
+	{
+		if(max < list[i])
+		{
+			max = list[i];
+			idx = i;
+		}
+	}
+	return idx;
+}
+
+static uint16_t find_min(uint16_t *list, uint16_t count)
+{
+	uint16_t i;
+	uint16_t idx;
+	uint16_t min;
+	min = list[0];
+	idx = 0;
+	for(i = 0; i < count; i ++)
+	{
+		if(min > list[i])
+		{
+			min = list[i];
+			idx = i;
+		}
+	}
+	return idx;
+}
+
+static float getTempFromADC(void)
+{
+	uint16_t i = 0;
+	uint16_t i_max;
+	uint16_t i_min;
+//	char str[16];
+	uint16_t V_val[FILTER_NUM];
+	float tmp = .0f;
+	
+	for(i = 0; i < FILTER_NUM; i ++)
+	{
+		V_val[i] = mew_stm32.ADCRead();
+		mew_stm32.DelayMS(1);
+	}
+	
+	i_max = find_max(V_val, FILTER_NUM);
+	i_min = find_min(V_val, FILTER_NUM);
+	
+	for(i = 0; i < FILTER_NUM; i ++)
+	{		
+		tmp += V_val[i];
+	}
+	
+	tmp -= V_val[i_max];
+	tmp -= V_val[i_min];
+	
+	tmp /= FILTER_NUM - 2;
+	
+	tmp *= 3.3f;
+	tmp /= 4096.0f;
+	
+	tmp -= 0.5f;
+	
+	tmp *= 100;
+	
+	return tmp;
+}
+void upTempInfo(void)
+{
+	char *tmpbuf;
+	char tmpstr[32];
+	cJSON *upJSON = cJSON_CreateObject();
+	
+	cJSON_AddStringToObject(upJSON, "type", "data");	
+	cJSON_AddStringToObject(upJSON, "id", "02");	
+	sprintf(tmpstr,"%.2f", getTempFromADC());
+	cJSON_AddStringToObject(upJSON, "temp", tmpstr);
+	
+	tmpbuf = cJSON_PrintUnformatted(upJSON);
+	cJSON_Delete(upJSON);
+	
+	mew_m26.SocketSend(0, (uint8_t *)tmpbuf, strlen(tmpbuf));	
+	
+	free(tmpbuf);
+}
+
 int main(void)
 {
 	cjson_hooks.malloc_fn = malloc;
@@ -55,7 +149,7 @@ int main(void)
 	mew_board_Init();
 	
 	sprintf(mew_m26.ADDR[0], "www.boryworks.com");
-	mew_m26.PORT[0] = 9000;
+	mew_m26.PORT[0] = 9002;
 	
 	mew_m26.SocketEnable(0);
 	
@@ -70,6 +164,7 @@ int main(void)
 	{
 		mew_m26.Socket_Schedule_NoOS();
 		
+		/*
 		if(gnss_frames > 0)
 		{
 			located = mew_NMEA_Parse_GNGLL((char *)gnss_rx_buff, &gngll_data);
@@ -92,6 +187,12 @@ int main(void)
 				if(login)
 					upLocInfo();
 			}
+		}
+		*/
+		if(mew_stm32.Nowticks - lastUpTicks > 1000 * 60)
+		{
+			lastUpTicks = mew_stm32.Nowticks;			
+			upTempInfo();
 		}
 	}
 }
