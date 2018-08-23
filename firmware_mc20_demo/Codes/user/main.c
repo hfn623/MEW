@@ -11,8 +11,12 @@
 
 #include "cJSON.h"
 
-cJSON_Hooks cjson_hooks;
 uint8_t login = 0;
+uint8_t sending = 0;
+int8_t located = 0;
+uint64_t lastUpTicks;
+
+cJSON_Hooks cjson_hooks;
 
 static char tmpstr[1024];
 static uint8_t tmpword[1024];
@@ -21,8 +25,6 @@ extern uint16_t gnss_rx_bufflen;
 extern uint8_t gnss_rx_buff[GNSS_RX_BUFF_COUNT];
 extern mew_GNGLL_Data gngll_data;
 extern uint8_t gnss_frames;
-uint64_t lastUpTicks;
-uint8_t sending = 0;
 
 void upLocInfo(void)
 {
@@ -70,7 +72,8 @@ int main(void)
 		
 		if(gnss_frames > 0)
 		{
-			if(0 == mew_NMEA_Parse_GNGLL((char *)gnss_rx_buff, &gngll_data))
+			located = mew_NMEA_Parse_GNGLL((char *)gnss_rx_buff, &gngll_data);
+			if(0 == located)
 			{
 				mew_board.LED_STA(0);				
 			}
@@ -81,7 +84,7 @@ int main(void)
 			gnss_rx_bufflen = 0;
 			gnss_frames = 0;
 		}
-		if(!sending && login)
+		if(!sending && login && !located)
 		{
 			if(mew_stm32.Nowticks - lastUpTicks > 1000 * 10)
 			{

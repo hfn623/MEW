@@ -766,22 +766,24 @@ static int8_t GPRSConn(void)
 	{
 		return err_res;
 	}
-	err_res = AT_CGREG(60000);
+	
+	err_res = AT_X("AT+CGATT=0\r", "AT+CGATT=0\r\r\nOK\r\n", AT_CMD_TIMEOUT_MSEC, 3);
 	if(err_res)
 	{
 		return err_res;
 	}
-//	err_res = AT_X("AT+CGATT=0\r", "AT+CGATT=0\r\r\nOK\r\n", AT_CMD_TIMEOUT_MSEC, 3);
+	AT_X("AT+CGATT=1\r", "\r\nOK\r\n", AT_CMD_TIMEOUT_MSEC, 1);
+//	err_res = AT_X("AT+CGATT=1\r", "\r\nOK\r\n", AT_CMD_TIMEOUT_MSEC, 1);
 //	if(err_res)
 //	{
 //		return err_res;
 //	}
-//	err_res = AT_X("AT+CGATT=1\r", "\r\nOK\r\n", AT_CMD_TIMEOUT_MSEC, 200);
-//	if(err_res)
-//	{
-//		return err_res;
-//	}
-
+	err_res = AT_CGREG(30000);
+	if(err_res)
+	{
+		return err_res;
+	}
+	
 	err_res = AT_X("AT+QIDNSIP=1\r", "AT+QIDNSIP=1\r\r\nOK\r\n", AT_CMD_TIMEOUT_MSEC, 3);
 	if(err_res)
 	{
