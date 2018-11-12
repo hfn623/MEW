@@ -1030,6 +1030,16 @@
               <FileType>5</FileType>
               <FilePath>.\Codes\APP\mew_iic.h</FilePath>
             </File>
+            <File>
+              <FileName>mew_m24128.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Codes\APP\mew_m24128.c</FilePath>
+            </File>
+            <File>
+              <FileName>mew_m24128.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Codes\APP\mew_m24128.h</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

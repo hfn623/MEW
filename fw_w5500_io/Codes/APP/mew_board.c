@@ -360,5 +360,60 @@ void mew_board_init()
 	}
 }
 
+void mew_m24128_dl_dly_ms_5_hook()
+{
+	mew_board.dl_dly_ms(5);
+}
 
+void mew_iic_sda_mode_output_hook(void)
+{
+	GPIO_InitTypeDef GPIO_InitStructure;	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+}
+
+void mew_iic_sda_mode_input_hook(void)	
+{
+	GPIO_InitTypeDef GPIO_InitStructure;	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;	
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;	
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+}
+
+void mew_m24128_wc_wr_h_hook(void)
+{
+	GPIO_SetBits(GPIOB, GPIO_Pin_5);
+}
+
+void mew_m24128_wc_wr_l_hook(void)
+{
+	GPIO_ResetBits(GPIOB, GPIO_Pin_5);
+}
+
+void mew_iic_scl_wr_h_hook(void)
+{
+	GPIO_SetBits(GPIOB, GPIO_Pin_6);
+}
+
+void mew_iic_scl_wr_l_hook(void)
+{
+	GPIO_ResetBits(GPIOB, GPIO_Pin_6);
+}
+
+void mew_iic_sda_wr_h_hook(void)
+{
+	GPIO_SetBits(GPIOB, GPIO_Pin_7);
+}
+
+void mew_iic_sda_wr_l_hook(void)
+{
+	GPIO_ResetBits(GPIOB, GPIO_Pin_7);
+}
+
+uint8_t mew_iic_sda_rd_hook(void)
+{
+	return GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_7)? 1 : 0;
+}
 

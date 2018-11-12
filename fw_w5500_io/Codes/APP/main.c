@@ -7,7 +7,7 @@
 #include "task.h"
 #include "cJSON.h"
 #include "mew_board.h"
-#include "mew_iic.h"
+#include "mew_m24128.h"
 #include "task_udp.h"
 #include "task_relay.h"
 
@@ -98,11 +98,23 @@ int main(void)
 //	{
 //		mew_board.led_d5(1);
 //	}
-	if(mew_m24128_wr_buff(62, bf, 67))
+	for(ii = 0; ii < 192; ii++)
+	{
+		bf[ii] = 100;
+	}
+	if(mew_m24128_wr_buff(0, bf, 128))
 	{
 		mew_board.led_d5(1);
 	}
-	if(mew_m24128_rd_buff(63, br, 66))
+	for(ii = 0; ii < 192; ii++)
+	{
+		bf[ii] = ii+0;
+	}
+	if(mew_m24128_wr_buff(10, bf, 15))
+	{
+		mew_board.led_d5(1);
+	}
+	if(mew_m24128_rd_buff(0, br, 192))
 	{
 		mew_board.led_d5(1);
 	}
