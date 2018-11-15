@@ -8,7 +8,9 @@
 
 #define BOARD_NAME "ENET_IO_W5500\0"
 
-#define SOCK_OF_UDP 1
+#define SOCK_OF_DEBUG			0
+#define SOCK_OF_UDP				1
+#define SOCK_OF_HTTP			3
 
 typedef struct mew_board_handle_t
 {
@@ -34,7 +36,7 @@ void mew_board_init(void);
 
 extern mew_board_handle_t mew_board;
 extern net_parms_handle_t net_parms;
-extern SemaphoreHandle_t sem_udp_recv;
+extern SemaphoreHandle_t sem_udp_recv, sem_http_recv;
 extern QueueHandle_t que_udp;
 extern QueueHandle_t que_rly;
 

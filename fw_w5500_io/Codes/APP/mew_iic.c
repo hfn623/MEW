@@ -24,7 +24,7 @@ extern void mew_iic_scl_wr_l_hook(void);
 extern void mew_iic_sda_wr_h_hook(void);
 extern void mew_iic_sda_wr_l_hook(void);
 
-extern uint8_t iic_sda_rd_hook(void);
+extern uint8_t mew_iic_sda_rd_hook(void);
 
 void mew_iic_start(void)
 {
@@ -96,7 +96,7 @@ void mew_iic_wr_byte(uint8_t byte)
 	//SDA_WR_H(); must delete for write
 }
 
-void mew_iic_rd_byte(uint8_t* byte)
+void mew_iic_rd_byte(uint8_t *byte)
 {
   char i;
 	SDA_MODE_IN();

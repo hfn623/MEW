@@ -705,6 +705,36 @@
               <FileType>5</FileType>
               <FilePath>.\Codes\Wiznet\loopback.h</FilePath>
             </File>
+            <File>
+              <FileName>httpParser.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Codes\Wiznet\httpParser.c</FilePath>
+            </File>
+            <File>
+              <FileName>httpParser.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Codes\Wiznet\httpParser.h</FilePath>
+            </File>
+            <File>
+              <FileName>httpServer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Codes\Wiznet\httpServer.c</FilePath>
+            </File>
+            <File>
+              <FileName>httpServer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Codes\Wiznet\httpServer.h</FilePath>
+            </File>
+            <File>
+              <FileName>httpUtil.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Codes\Wiznet\httpUtil.c</FilePath>
+            </File>
+            <File>
+              <FileName>httpUtil.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Codes\Wiznet\httpUtil.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -991,16 +1021,6 @@
               <FilePath>.\Codes\APP\main.c</FilePath>
             </File>
             <File>
-              <FileName>mew_board.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Codes\APP\mew_board.c</FilePath>
-            </File>
-            <File>
-              <FileName>mew_board.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\Codes\APP\mew_board.h</FilePath>
-            </File>
-            <File>
               <FileName>task_udp.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Codes\APP\task_udp.c</FilePath>
@@ -1011,6 +1031,16 @@
               <FilePath>.\Codes\APP\task_udp.h</FilePath>
             </File>
             <File>
+              <FileName>task_http.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Codes\APP\task_http.c</FilePath>
+            </File>
+            <File>
+              <FileName>task_http.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Codes\APP\task_http.h</FilePath>
+            </File>
+            <File>
               <FileName>task_relay.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Codes\APP\task_relay.c</FilePath>
@@ -1019,6 +1049,16 @@
               <FileName>task_relay.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Codes\APP\task_relay.h</FilePath>
+            </File>
+            <File>
+              <FileName>mew_board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Codes\APP\mew_board.c</FilePath>
+            </File>
+            <File>
+              <FileName>mew_board.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Codes\APP\mew_board.h</FilePath>
             </File>
             <File>
               <FileName>mew_iic.c</FileName>
@@ -1039,6 +1079,11 @@
               <FileName>mew_m24128.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Codes\APP\mew_m24128.h</FilePath>
+            </File>
+            <File>
+              <FileName>pages.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Codes\APP\pages.h</FilePath>
             </File>
           </Files>
         </Group>

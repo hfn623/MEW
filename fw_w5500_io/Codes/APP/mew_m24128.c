@@ -60,7 +60,7 @@ int8_t mew_m24128_wr_byte(uint16_t addr, uint8_t byte)
 	return 0;
 }
 
-int8_t mew_m24128_rd_byte(uint16_t addr, uint8_t* byte)
+int8_t mew_m24128_rd_byte(uint16_t addr, uint8_t *byte)
 {
 	mew_iic_start();
 	
@@ -102,7 +102,7 @@ int8_t mew_m24128_rd_byte(uint16_t addr, uint8_t* byte)
 	return 0;
 }
 
-static int8_t mew_m24128_wr_buff_in_page(uint16_t addr, uint8_t* buff, uint16_t len)
+static int8_t mew_m24128_wr_buff_in_page(uint16_t addr, uint8_t *buff, uint16_t len)
 {
 	uint16_t i;
 	
@@ -158,7 +158,7 @@ static int8_t mew_m24128_wr_buff_in_page(uint16_t addr, uint8_t* buff, uint16_t 
 
 
 
-static int8_t mew_m24128_rd_buff_in_page(uint16_t addr, uint8_t* buff, uint16_t len)
+static int8_t mew_m24128_rd_buff_in_page(uint16_t addr, uint8_t *buff, uint16_t len)
 {
 	uint16_t i;
 	
@@ -211,7 +211,7 @@ static int8_t mew_m24128_rd_buff_in_page(uint16_t addr, uint8_t* buff, uint16_t 
 	return 0;
 }
 
-int8_t mew_m24128_wr_buff(uint16_t addr, uint8_t* buff, uint16_t len)
+int8_t mew_m24128_wr_buff(uint16_t addr, uint8_t *buff, uint16_t len)
 {
 	char head_block_cnt;
 	char tail_block_cnt;
@@ -261,7 +261,7 @@ int8_t mew_m24128_wr_buff(uint16_t addr, uint8_t* buff, uint16_t len)
 	return 0;
 }
 
-int8_t mew_m24128_rd_buff(uint16_t addr, uint8_t* buff, uint16_t len)
+int8_t mew_m24128_rd_buff(uint16_t addr, uint8_t *buff, uint16_t len)
 {
 	char head_block_cnt;
 	char tail_block_cnt;

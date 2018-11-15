@@ -9,13 +9,43 @@
 #include "semphr.h"
 #include "task.h"
 #include "socket.h"
+#include "cJSON.h"
+#include "httpServer.h"
+
+
+//#define MISO_RD() 		GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_6)? 1 : 0
+
+//#define MOSI_WR_H()		GPIO_SetBits(GPIOA, GPIO_Pin_7)
+//#define MOSI_WR_L()		GPIO_ResetBits(GPIOA, GPIO_Pin_7)
+
+//#define SCK_H()				GPIO_SetBits(GPIOA, GPIO_Pin_5)
+//#define SCK_L()				GPIO_ResetBits(GPIOA, GPIO_Pin_5);
+
+#define SCS_H()				GPIO_SetBits(GPIOA, GPIO_Pin_4);
+#define SCS_L()				GPIO_ResetBits(GPIOA, GPIO_Pin_4);
+
+wiz_NetInfo gWIZNETINFO;
 
 mew_board_handle_t mew_board;
 net_parms_handle_t net_parms;
-SemaphoreHandle_t sem_udp_recv;
-QueueHandle_t que_rly;
 
-void W5500_IRQ_HANDLER()
+extern SemaphoreHandle_t sem_http;
+extern SemaphoreHandle_t sem_udp;
+
+void vApplicationTickHook(void)
+{
+	httpServer_time_handler();
+}
+
+static void cjson_hooks_init(void)
+{
+	cJSON_Hooks cjson_hooks;
+	cjson_hooks.malloc_fn = pvPortMalloc;
+	cjson_hooks.free_fn = vPortFree;
+	cJSON_InitHooks(&cjson_hooks);
+}
+
+void W5500_IRQ_HANDLER(void)
 {
 	sockint_kind sik;
 	if(EXTI_GetITStatus(EXTI_Line0) != RESET)
@@ -23,9 +53,24 @@ void W5500_IRQ_HANDLER()
 		if(SOCK_OK != ctlsocket(SOCK_OF_UDP, CS_GET_INTERRUPT, &sik))
 		{
 		}
-		if(sik == SIK_RECEIVED)
+		if(sik & SIK_RECEIVED)
 		{
-			xSemaphoreGiveFromISR(sem_udp_recv, NULL);
+			sik = SIK_ALL;
+			if(SOCK_OK != ctlsocket(SOCK_OF_UDP, CS_CLR_INTERRUPT, &sik))
+			{
+			}
+			xSemaphoreGiveFromISR(sem_udp, NULL);
+		}
+		if(SOCK_OK != ctlsocket(SOCK_OF_HTTP, CS_GET_INTERRUPT, &sik))
+		{
+		}			
+		if(sik & SIK_CONNECTED)
+		{
+			sik = SIK_ALL;
+			if(SOCK_OK != ctlsocket(SOCK_OF_HTTP, CS_CLR_INTERRUPT, &sik))
+			{
+			}
+			xSemaphoreGiveFromISR(sem_http, NULL);
 		}
 		EXTI_ClearITPendingBit(EXTI_Line0);
 	} 
@@ -64,12 +109,58 @@ static void mew_w5500_rst(void)
 
 static void mew_w5500_spi_cs(void)
 {
-	GPIO_ResetBits(GPIOA, GPIO_Pin_4);
+	SCS_L();
 }
 
 static void mew_w5500_spi_decs(void)
 {
-	GPIO_SetBits(GPIOA, GPIO_Pin_4);
+	SCS_H();
+}
+
+/*
+static uint8_t mew_spi_wr_rd_byte(uint8_t byte)
+{
+	uint8_t out;
+	char i = 0;
+	
+	SCK_L();
+	//mew_board_dl_dly_us(1);	
+	for(i = 0; i < 8; i++)
+	{
+		SCK_L();
+		if((byte & 0x80) == 0)
+		{
+			MOSI_WR_L();
+		}
+		else
+		{
+			MOSI_WR_H();
+		}
+		//mew_board_dl_dly_us(1);	
+		SCK_H();
+		SCK_L();
+		//mew_board_dl_dly_us(1);	
+			
+		out <<= 1;
+		out |= MISO_RD();
+		//mew_board_dl_dly_us(1);	
+		
+		
+	}	
+	SCK_L();	
+	
+	return out;
+}*/
+static void mew_cris_enter(void)
+{
+	taskENTER_CRITICAL();
+	//vPortEnterCritical();
+}
+
+static void mew_cris_exit(void)
+{
+	taskEXIT_CRITICAL();
+	//vPortExitCritical();
 }
 
 static void mew_w5500_spi_wr_byte(uint8_t wb)
@@ -91,7 +182,7 @@ static uint8_t mew_w5500_spi_rd_byte(void)
 static void mew_w5500_net_params_init(void)
 {
 	uint8_t chipid[6];
-	wiz_NetInfo gWIZNETINFO;
+	
 		
 	uint8_t mac[6]={0x00,0x08,0xdc,0x11,0x11,0x11}; ///< Source Mac Address
 	uint8_t ip[4]={192,168,1,150}; ///< Source IP Address
@@ -129,15 +220,15 @@ static void mew_w5500_net_params_init(void)
 	
 	
 	wizchip_setinterruptmask(IK_SOCK_ALL);
+	
+	socket(SOCK_OF_DEBUG, Sn_MR_UDP, 510, 0);
 }
 
 static void mew_w5500_init(void)
 {
-	reg_wizchip_cris_cbfunc(NULL, NULL); // 注册临界区函数
+	reg_wizchip_cris_cbfunc(mew_cris_enter, mew_cris_exit); // 注册临界区函数
 	reg_wizchip_cs_cbfunc(mew_w5500_spi_cs, mew_w5500_spi_decs);// 注册片选函数
-	reg_wizchip_spi_cbfunc(mew_w5500_spi_rd_byte, mew_w5500_spi_wr_byte); // 注册读写函数
-	
-	
+	reg_wizchip_spi_cbfunc(mew_w5500_spi_rd_byte, mew_w5500_spi_wr_byte); // 注册读写函数	
 }
 
 static void mew_board_stm32_init()
@@ -164,7 +255,7 @@ static void mew_board_stm32_init()
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //使能外部中断通道 
 	NVIC_Init(&NVIC_InitStructure); //根据结构体信息进行优先级初始化	
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_4 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_15;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_15;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
@@ -186,8 +277,12 @@ static void mew_board_stm32_init()
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	
+//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
+//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+//	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_5 | GPIO_Pin_7;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_7 | GPIO_Pin_6;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
@@ -207,7 +302,7 @@ static void mew_board_stm32_init()
 	
 	
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 	
 	GPIO_EXTILineConfig(GPIO_PortSourceGPIOB, GPIO_PinSource0);	
@@ -349,8 +444,16 @@ void mew_board_init()
 	mew_board.dl_dly_us = mew_board_dl_dly_us;
 	
 	mew_board_stm32_init();	
+	
+	mew_board.led_d5(0);
+	mew_board.led_d6(0);
+
+	mew_board.rly_rst();
+	
+	
 	mew_w5500_rst();	
 	mew_board_dl_dly_ms(1);	
+	
 	mew_w5500_init();		
 	mew_w5500_net_params_init();
 	
@@ -358,6 +461,8 @@ void mew_board_init()
 	{
 		while(1);
 	}
+	
+	cjson_hooks_init();
 }
 
 void mew_m24128_dl_dly_ms_5_hook()

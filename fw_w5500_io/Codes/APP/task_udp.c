@@ -10,6 +10,11 @@
 #include "mew_board.h"
 #include "cjson.h"
 
+SemaphoreHandle_t sem_udp;
+
+uint8_t dest_ip[4] = {192, 168, 1, 100};
+uint16_t dest_port = 9000;
+
 void parse_cmd(char const *buff)
 {
 	cJSON *json;
@@ -32,8 +37,12 @@ void parse_cmd(char const *buff)
 			if(strcmp(rly1->valuestring, "close") == 0)
 			{
 				msg = 0x80;
+				xQueueSend(que_rly, &msg, portMAX_DELAY);
 			}
-			xQueueSend(que_rly, &msg, portMAX_DELAY);
+			if(strcmp(rly1->valuestring, "open") == 0)
+			{
+				xQueueSend(que_rly, &msg, portMAX_DELAY);
+			}
 			cJSON_Delete(rly1);
 		}
 		if(rly2 != NULL)
@@ -42,8 +51,12 @@ void parse_cmd(char const *buff)
 			if(strcmp(rly2->valuestring, "close") == 0)
 			{
 				msg |= 0x80;
+				xQueueSend(que_rly, &msg, portMAX_DELAY);
 			}
-			xQueueSend(que_rly, &msg, portMAX_DELAY);
+			if(strcmp(rly2->valuestring, "open") == 0)
+			{
+				xQueueSend(que_rly, &msg, portMAX_DELAY);
+			}
 			cJSON_Delete(rly2);
 		}
 		if(rly3 != NULL)
@@ -52,8 +65,12 @@ void parse_cmd(char const *buff)
 			if(strcmp(rly3->valuestring, "close") == 0)
 			{
 				msg |= 0x80;
+				xQueueSend(que_rly, &msg, portMAX_DELAY);
 			}
-			xQueueSend(que_rly, &msg, portMAX_DELAY);
+			if(strcmp(rly3->valuestring, "open") == 0)
+			{
+				xQueueSend(que_rly, &msg, portMAX_DELAY);
+			}
 			cJSON_Delete(rly3);
 		}
 		if(rly4 != NULL)
@@ -62,8 +79,12 @@ void parse_cmd(char const *buff)
 			if(strcmp(rly4->valuestring, "close") == 0)
 			{
 				msg |= 0x80;
+				xQueueSend(que_rly, &msg, portMAX_DELAY);
 			}
-			xQueueSend(que_rly, &msg, portMAX_DELAY);
+			if(strcmp(rly4->valuestring, "open") == 0)
+			{
+				xQueueSend(que_rly, &msg, portMAX_DELAY);
+			}			
 			cJSON_Delete(rly4);
 		}
 		cJSON_Delete(type);
@@ -72,31 +93,30 @@ void parse_cmd(char const *buff)
 }
 
 void task_udp(void *parm)
-{
-	
-	
+{	
 	int32_t ret;
 	uint8_t *rbuf;
 	uint16_t rlen;
 	uint8_t src_ip[4];
 	uint16_t port;
 	
-	sem_udp_recv = xSemaphoreCreateBinary();
+	sem_udp = xSemaphoreCreateBinary();
 	
 	//打开SOCKET1的接收中断
-	sockint_kind sik = SIK_RECEIVED;
+	sockint_kind sik = SIK_ALL;
 	//if(SOCK_OK != ctlsocket(1, CS_SET_INTMASK, &sik))
 	{
 		//while(1);
 	}
-	if(1 != socket(SOCK_OF_UDP, Sn_MR_UDP, 502, 0))
+	if(SOCK_OF_UDP != socket(SOCK_OF_UDP, Sn_MR_UDP, 502, 0))
 	{
 		while(1);
 	}	
 	
+	
 	while(1)
 	{
-		if(xSemaphoreTake(sem_udp_recv, portMAX_DELAY) == pdTRUE)
+		if(xSemaphoreTake(sem_udp, portMAX_DELAY) == pdTRUE)
 		{			
 			if(SOCK_OK != getsockopt(SOCK_OF_UDP, SO_RECVBUF, &rlen))
 			{					
@@ -120,7 +140,7 @@ void task_udp(void *parm)
 					else
 					{
 						// not have enough memory
-					}			
+					}
 				}
 				else
 				{
@@ -128,9 +148,9 @@ void task_udp(void *parm)
 				}
 			}
 			// must clr interrupt after read the buffer
-			if(SOCK_OK != ctlsocket(SOCK_OF_UDP, CS_CLR_INTERRUPT, &sik))
-			{
-			}			
+//			if(SOCK_OK != ctlsocket(SOCK_OF_UDP, CS_CLR_INTERRUPT, &sik))
+//			{
+//			}			
 			//wizchip_clrinterrupt(IK_SOCK_ALL);
 		}		
 		//

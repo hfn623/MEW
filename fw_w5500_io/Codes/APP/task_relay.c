@@ -5,6 +5,8 @@
 #include "queue.h"
 #include "mew_board.h"
 
+QueueHandle_t que_rly;
+
 void task_relay(void *parm)
 {
 	uint8_t msg;
