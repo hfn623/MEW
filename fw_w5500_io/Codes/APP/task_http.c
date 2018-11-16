@@ -19,46 +19,103 @@
 
 SemaphoreHandle_t sem_http;
 
-char tmpstr[1024];
+char tmpstr[512];
 
 uint8_t http_tbuf[2048];
 uint8_t http_rbuf[2048];
-char *page_w5500_js;
+
+uint8_t page_w5500_js[512];
+uint8_t page_ajax_js[512];
 
 uint8_t http_sn[1] = {SOCK_OF_HTTP};
 
 uint8_t dbg_ip[4] = {192, 168, 1, 100};
 uint16_t dbg_port = 9000;
 
-void gen_w5500_js(char **pagep, wiz_NetInfo config_msg)
+
+uint32_t gen_w5500_js(uint8_t **content, void *parms)
 {
-	cJSON *jo;
-	jo = cJSON_CreateObject();
+	wiz_NetInfo *netInfo = parms;
+	cJSON *jo = cJSON_CreateObject();
+	uint32_t len;
+	
+
+//	if(*content != NULL)
+//	{
+//		vPortFree(content);
+//	}
 	
 	cJSON_AddStringToObject(jo, "ver", "1.0");
 	sprintf(tmpstr, "%02X:%02X:%02X:%02X:%02X:%02X",\
-	config_msg.mac[0], config_msg.mac[1], config_msg.mac[2],\
-	config_msg.mac[3], config_msg.mac[4], config_msg.mac[5]);	
+	netInfo->mac[0], netInfo->mac[1], netInfo->mac[2],\
+	netInfo->mac[3], netInfo->mac[4], netInfo->mac[5]);	
 	cJSON_AddStringToObject(jo, "mac", tmpstr);
 	
 	sprintf(tmpstr, "%d.%d.%d.%d",\
-	config_msg.ip[0],config_msg.ip[1],config_msg.ip[2],config_msg.ip[3]);
+	netInfo->ip[0], netInfo->ip[1], netInfo->ip[2], netInfo->ip[3]);
 	cJSON_AddStringToObject(jo, "ip", tmpstr);
 	
 	sprintf(tmpstr, "%d.%d.%d.%d",\
-	config_msg.gw[0],config_msg.gw[1],config_msg.gw[2],config_msg.gw[3]);
+	netInfo->gw[0], netInfo->gw[1], netInfo->gw[2], netInfo->gw[3]);
 	cJSON_AddStringToObject(jo, "gw", tmpstr);
 	
 	sprintf(tmpstr, "%d.%d.%d.%d",\
-	config_msg.sn[0],config_msg.sn[1],config_msg.sn[2],config_msg.sn[3]);
+	netInfo->sn[0], netInfo->sn[1], netInfo->sn[2],netInfo->sn[3]);
 	cJSON_AddStringToObject(jo, "sub", tmpstr);
 	
 	sprintf(tmpstr,	"settingsCallback(%s);",\
 	cJSON_PrintUnformatted(jo));
 	
 	cJSON_Delete(jo);
+	
+	len = strlen(tmpstr);
+	
+	if(*content == NULL)
+	{
+		*content = page_w5500_js;
+	}
+	
+//	*content = pvPortMalloc(len + 1);
+//	if(*content != NULL)
+	{
+		memcpy(*content, tmpstr, len);
+		*((*content) + len) = 0;
+	}
   
-	*pagep = tmpstr;
+	return len;
+}
+
+uint32_t gen_ajax_js(uint8_t **content, void *parms)
+{
+	uint32_t *systk = (uint32_t *)parms;
+	uint32_t len;
+
+//	if(*content != NULL)
+//	{
+//		vPortFree(content);
+//	}
+	
+	sprintf(tmpstr, "%d",	*systk);		
+	
+	len = strlen(tmpstr);
+	
+	if(*content == NULL)
+	{
+		*content = page_ajax_js;
+	}
+	
+//	*content = pvPortMalloc(len + 1);
+//	if(*content != NULL)
+	{
+		memcpy(*content, tmpstr, len);
+		*((*content) + len) = 0;
+	}
+//	else
+//	{
+//		return 0;
+//	}
+  
+	return len;
 }
 
 uint8_t predefined_get_cgi_processor(uint8_t * uri_name, uint8_t * buf, uint16_t * len)
@@ -71,79 +128,21 @@ uint8_t predefined_set_cgi_processor(uint8_t * uri_name, uint8_t * uri, uint8_t 
 	return 0;
 }
 
-
-void task_http_data(void *parm)
+void task_http(void *parm)
 {
-	uint16_t rlen;
+//	uint8_t timecount;
+//	uint8_t so_status;
 	
 	httpServer_init(http_tbuf, http_rbuf, 1, http_sn);
 	
-	reg_httpServer_webContent("index.html", CONFIG_HTML);
-	gen_w5500_js(&page_w5500_js, gWIZNETINFO);
-	reg_httpServer_webContent("w5500.js", (uint8_t *)page_w5500_js);
+	reg_httpServer_webContent((uint8_t *)"config.html", (uint8_t *)CONFIG_HTML);		
+	reg_httpServer_webContent((uint8_t *)"ajax.html", (uint8_t *)AJAX_HTML);
+	
+	reg_httpServer_webContent_dynamic((uint8_t *)"w5500.js", gen_w5500_js, &gWIZNETINFO);
+	reg_httpServer_webContent_dynamic((uint8_t *)"ajax.js", gen_ajax_js, &sys_tick);
+
 	
 	sem_http = xSemaphoreCreateBinary();
-	
-	while(1)
-	{
-		if(xSemaphoreTake(sem_http, portMAX_DELAY) == pdTRUE)
-		{	
-			if(SOCK_OK != getsockopt(SOCK_OF_HTTP, SO_RECVBUF, &rlen))
-			{					
-			}
-//			if(rlen >= 8)
-			{
-				//rlen -= 8;
-				httpServer_run(0);
-				/*
-				if(rlen > 0)
-				{
-					rbuf = pvPortMalloc(rlen + 1);
-					if(rbuf != NULL)
-					{
-						ret = recv(SOCK_OF_HTTP, rbuf, rlen);
-						if(ret == rlen)
-						{
-							*(rbuf + rlen) = 0;
-							sendto(SOCK_OF_DEBUG, rbuf, rlen, dbg_ip, dbg_port);
-							//proc_http(SOCK_OF_HTTP, rbuf);
-							memcpy(http_rbuf, rbuf, rlen);
-							
-							//send(SOCK_OF_HTTP, (uint8_t *)CONFIG_HTML, strlen(CONFIG_HTML));
-							//close(SOCK_OF_HTTP);
-							//disconnect(SOCK_OF_HTTP);
-							
-							//parse_cmd((const char *)rbuf);
-						}
-						vPortFree(rbuf);
-					}
-					else
-					{
-						// not have enough memory
-					}
-				}
-				else
-				{
-					// not have payload data
-				}*/
-			}
-//			if(SOCK_OK != ctlsocket(SOCK_OF_HTTP, CS_CLR_INTERRUPT, &sik))
-//			{
-//			}
-
-		}
-	}
-}
-
-
-void task_http_conn(void *parm)
-{
-	uint8_t timecount;
-	uint8_t so_status;
-//	uint8_t ret;
-//	uint8_t arg;
-	
-
 	
 	
 //	ctlwizchip(CW_GET_INTRTIME, &ret);
@@ -159,6 +158,14 @@ void task_http_conn(void *parm)
 	
 	while(1)
 	{
+		//xSemaphoreTake(sem_http, 100);
+		if(pdTRUE == xSemaphoreTake(sem_http, 100))
+		{
+			httpServer_run(0);
+		}
+		else
+			httpServer_run(0);
+		/*
 		if(SOCK_OK != getsockopt(SOCK_OF_HTTP, SO_STATUS, &so_status))
 		{
 		}
@@ -201,6 +208,6 @@ void task_http_conn(void *parm)
 				timecount = 0;
 				break;
 		}
-		
+		*/
 	}
 }

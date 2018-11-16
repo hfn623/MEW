@@ -29,12 +29,21 @@ wiz_NetInfo gWIZNETINFO;
 mew_board_handle_t mew_board;
 net_parms_handle_t net_parms;
 
+uint32_t sys_tick = 0;
+
 extern SemaphoreHandle_t sem_http;
 extern SemaphoreHandle_t sem_udp;
 
 void vApplicationTickHook(void)
 {
-	httpServer_time_handler();
+	static uint16_t httpserver_tick_ms;
+	httpserver_tick_ms++;
+	if(httpserver_tick_ms >= 1000)
+	{
+		httpserver_tick_ms = 0;
+		httpServer_time_handler();
+	}	
+	sys_tick++;
 }
 
 static void cjson_hooks_init(void)

@@ -103,7 +103,7 @@ void task_udp(void *parm)
 	sem_udp = xSemaphoreCreateBinary();
 	
 	//打开SOCKET1的接收中断
-	sockint_kind sik = SIK_ALL;
+//	sockint_kind sik = SIK_ALL;
 	//if(SOCK_OK != ctlsocket(1, CS_SET_INTMASK, &sik))
 	{
 		//while(1);

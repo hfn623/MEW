@@ -5,7 +5,6 @@
 
 extern wiz_NetInfo gWIZNETINFO;
 
-void task_http_data(void *parm);
-void task_http_conn(void *parm);
+void task_http(void *parm);
 
 #endif

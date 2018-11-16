@@ -1,6 +1,45 @@
 #ifndef PAGES_H
 #define PAGES_H
 
+#define AJAX_HTML \
+"<!DOCTYPE html>"\
+"<html>"\
+"<head>"\
+"<title>IoT-IO AJAX</title>"\
+"<meta http-equiv='Content-Type' content='text/html; charset=GB2312'/>"\
+\
+"<script type=\"text/javascript\">"\
+"function $(id) { return document.getElementById(id); };"\
+"function test(){"\
+"	if (window.XMLHttpRequest){"\
+"		xmlhttp=new XMLHttpRequest();"\
+"	}"\
+"	else{"\
+"		xmlhttp=new ActiveXObject(\"Microsoft.XMLHTTP\");"\
+"	}"\
+"	xmlhttp.onreadystatechange=function(){"\
+"		if(xmlhttp.readyState==4 && xmlhttp.status==200){"\
+"			test2(xmlhttp.responseText);"\
+"		}"\
+"	};"\
+"	xmlhttp.open(\"get\", \"ajax.js\", true); "\
+"	xmlhttp.send(); "\
+"};"\
+"function test2(data){"\
+"		$('txtSec').value = data;"\
+"};"\
+"setInterval(test, 1000);"\
+"</script>"\
+\
+"</head>"\
+"<body>"\
+"<input type='text' id='txtSec' name='sub' size='16' /></p>"\
+"</tbody>"\
+"</table>"\
+"</body>"\
+"</html>"
+
+
 #define CONFIG_HTML  "<!DOCTYPE html>"\
 "<html>"\
 "<head>"\
@@ -43,5 +82,25 @@
 "<script type='text/javascript' src='w5500.js'></script>"\
 "</body>"\
 "</html>"
+/*
+"<script>"\
+"function $() { test();"\
+"setInterval(test, 3000);"\
+"function test(){"\
+\
+"		$.ajax({"\
+"            type: 'GET',"\
+"            url: 'ajax.js',"\
+"						 data: {'txtSec':'59'},"\
+"            dataType: 'json',"\
+"            success: function(data){"\
+"								$('txtSec').value = data.sec;"\
+"										},"\
+"						 error: function(data){$('txtSec').value = 'err';}"\
+"		});"\
+"	};"\
+"};"\
+"function $(id) { return document.getElementById(id); };"\
+"</script>"\*/
 
 #endif

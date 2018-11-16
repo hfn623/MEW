@@ -39,6 +39,7 @@ extern net_parms_handle_t net_parms;
 extern SemaphoreHandle_t sem_udp_recv, sem_http_recv;
 extern QueueHandle_t que_udp;
 extern QueueHandle_t que_rly;
+extern uint32_t sys_tick;
 
 #define W5500_IRQ_HANDLER EXTI0_IRQHandler
 

@@ -33,18 +33,12 @@ void tasks_init(void)
 	9, 
 	NULL );
 	
-	xTaskCreate(task_http_data, 
-	"http_data", 
+
+	xTaskCreate(task_http, 
+	"http", 
 	configMINIMAL_STACK_SIZE, 
 	NULL, 
 	8, 
-	NULL );
-	
-	xTaskCreate(task_http_conn, 
-	"http_conn", 
-	configMINIMAL_STACK_SIZE, 
-	NULL, 
-	7, 
 	NULL );
 	
 	xTaskCreate(task_relay,	
